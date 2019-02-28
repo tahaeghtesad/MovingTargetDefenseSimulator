@@ -2,17 +2,21 @@ import logging
 import random
 from Player import Player
 
+
 class BaseDefender(Player):
 
-    def __init__(self, m = 10, downtime = 7):
+    def __init__(self, m=10, downtime=7):
         super().__init__()
+        self.logger = logging.getLogger(BaseDefender.__name__)
         self.m = m
         self.downtime = downtime
 
-        self.servers = [{
-            'status': -1,
-            'progress': 0
-        }]
+        self.servers = []
+        for i in range(m):
+            self.servers.append({
+                'status': -1,
+                'progress': 0
+            })
 
     def reimage(self, time, last_probe, reimage):
 
@@ -31,12 +35,13 @@ class BaseDefender(Player):
 
         ### Performing
 
-        action = random.randint(0, self.m - 1)
-        logging.warning(f'Doing random reimage: {action}')
+        # action = random.randint(-1, self.m - 1)
+        action = -1
+        self.logger.warning(f'Doing random reimage: {action}')
         reimage(action)
 
         if self.servers[action]['status'] == -1:
-            logging.info('Reimage was successful.')
+            self.logger.info('Reimage was successful.')
             self.servers[action]['status'] = time
         else:
-            logging.info('Reimage was unsuccessful.')
+            self.logger.info('Reimage was unsuccessful.')

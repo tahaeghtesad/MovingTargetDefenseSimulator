@@ -1,6 +1,7 @@
 from enum import Enum
 import random
 import math
+import time
 import logging
 from tqdm import tqdm
 from Attacker import BaseAttacker
@@ -8,17 +9,19 @@ from Defender import BaseDefender
 
 
 class Party(Enum):
-    Attacker = 1,
+    Attacker = 1
     Defender = 2
-
 
 class Game:
     def __init__(self, m=10, downtime=7, success_increase_ratio=1, time_limit=400, probe_detection=0.):
-        self.servers = [{
-            'control': Party.Defender,
-            'status': -1,  # -1 means that it is up, a positive number is the time of re-image
-            'progress': 0
-        }] * m
+        self.logger = logging.getLogger(__name__)
+        self.servers = []
+        for i in range(m):
+            self.servers.append({
+                'control': Party.Defender,
+                'status': -1,  # -1 means that it is up, a positive number is the time of re-image
+                'progress': 0
+            })
 
         self.m = m
         self.downtime = downtime
@@ -32,8 +35,12 @@ class Game:
         self.time = 0
 
     def probe(self, server):
-        if not 0 <= server < self.m:
+        self.logger.info(f'Probing {server}')
+        if not -1 <= server < self.m:
             raise Exception('Chosen server is not in range')
+
+        if server == -1:
+            return False
 
         if self.servers[server]['status'] == -1:
             self.servers[server]['progress'] += 1
@@ -50,8 +57,11 @@ class Game:
         return False
 
     def reimage(self, server):
-        if not 0 <= server < self.m:
+        if not -1 <= server < self.m:
             raise Exception('Chosen server is not in range')
+
+        if server == -1:
+            return
 
         if self.servers[server]['status'] != -1:
             return
@@ -71,14 +81,21 @@ class Game:
     def sigmoid(x, tth, tsl=5):
         return 1. / (1. + math.exp(-tsl * (x - tth)))
 
-    def utility(self, nc, nd, w=.3, tth_1=.5, tth_2=.5):
+    @staticmethod
+    def get_params(env, setting): # env = [1: control/avail 2: control/config 3:disrupt/avail 4:disrupt/confid] - setting = [0:low 1:major 2:high]
+        utenv = [(1, 1), (1, 0), (0, 1), (0, 0)]
+        setenv = [(.2, .2, .2, .2), (.5, .5, .5, .5), (.8, .8, .8, .8)]
+        return utenv[env], setenv[setting]
+
+    def utility(self, nc, nd, w, tth_1, tth_2):
         return w * Game.sigmoid(nc / self.m, tth_1) + (1 - w) * Game.sigmoid((nc + nd) / self.m, tth_2)
 
     def play(self, attacker: BaseAttacker, defender: BaseDefender):
         ### Reseting state
         self.__init__(self.m, self.downtime, self.success_increase_ratio, self.time_limit, self.probe_detection)
-        for self.time in tqdm(range(self.time_limit)):
-
+        for self.time in range(self.time_limit):
+            self.logger.info(self.servers)
+            self.logger.info(f'Round {self.time}/{self.time_limit}')
             ### Onlining servers
 
             for i in range(self.m):
@@ -99,5 +116,8 @@ class Game:
             ncd = sum(server['control'] == Party.Defender for server in self.servers)
             nd = sum(server['status'] == -1 for server in self.servers)
 
-            attacker.update_utility(self.utility(nca, nd))
-            attacker.update_utility(self.utility(ncd, nd))
+            ut, set = Game.get_params(0, 0)
+            attacker.update_utility(self.utility(nca, nd, ut[0], set[0], set[1]))
+            defender.update_utility(self.utility(ncd, nd, ut[1], set[2], set[3]))
+
+            self.logger.info(self.servers)

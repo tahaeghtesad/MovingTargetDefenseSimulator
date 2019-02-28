@@ -5,16 +5,19 @@ from Player import Player
 
 class BaseAttacker(Player):
 
-    def __init__(self, m = 10, downtime = 7):
+    def __init__(self, m=10, downtime=7):
         super().__init__()
+        self.logger = logging.getLogger(BaseAttacker.__name__)
         self.m = m
         self.downtime = downtime
 
-        self.servers = [{
-            'status': -1,
-            'progress': 0,
-            'control': 0
-        }]
+        self.servers = []
+        for i in range(m):
+            self.servers.append({
+                'status': -1,
+                'progress': 0,
+                'control': 0
+            })
 
     def probe(self, time, last_reimage, probe):
         ### updating state
@@ -36,12 +39,13 @@ class BaseAttacker(Player):
 
         ### Choosing action
 
-        action = random.randint(0, self.m - 1)
-        logging.warning(f'Doing random probe: {action}')
+        # action = random.randint(-1, self.m - 1)
+        action = -1
+        self.logger.warning(f'Doing random probe: {action}')
 
         success = probe(action)
 
         if success:
             self.servers[action]['control'] = 1
 
-        logging.info(f'Probe was {"successful" if success else "unsuccessful"}.')
+        self.logger.info(f'Probe was {"successful" if success else "unsuccessful"}.')
