@@ -13,7 +13,7 @@ class Party(Enum):
     Defender = 2
 
 class Game:
-    def __init__(self, m=10, downtime=7, success_increase_ratio=1, time_limit=400, probe_detection=0.):
+    def __init__(self, m=10, downtime=7, success_increase_ratio=1, time_limit=400, probe_detection=0., utenv=0, setting=0):
         self.logger = logging.getLogger(__name__)
         self.servers = []
         for i in range(m):
@@ -32,10 +32,11 @@ class Game:
         self.last_probe = -1  # -1 means that the last probe is not detectable
         self.last_reimage = -1  # -1 means that the last reimage is not detectable
 
+        self.utenv, self.setting = Game.get_params(utenv, setting)
+
         self.time = 0
 
     def probe(self, server):
-        self.logger.info(f'Probing {server}')
         if not -1 <= server < self.m:
             raise Exception('Chosen server is not in range')
 
@@ -99,7 +100,7 @@ class Game:
     def play(self, attacker: BaseAttacker, defender: BaseDefender):
         ### Reseting state
         self.__init__(self.m, self.downtime, self.success_increase_ratio, self.time_limit, self.probe_detection)
-        for self.time in range(self.time_limit):
+        for self.time in tqdm(range(self.time_limit)):
             self.logger.info(f'Round {self.time}/{self.time_limit}')
             ### Onlining servers
 
@@ -124,9 +125,8 @@ class Game:
             ncd = sum(server['control'] == Party.Defender for server in self.servers)
             nd = sum(server['status'] == -1 for server in self.servers)
 
-            ut, set = Game.get_params(0, 0)
-            attacker.update_utility(self.utility(nca, nd, ut[0], set[0], set[1]))
-            defender.update_utility(self.utility(ncd, nd, ut[1], set[2], set[3]))
+            attacker.update_utility(self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]))
+            defender.update_utility(self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3]))
 
         self.logger.error(attacker.utility)
         self.logger.error(defender.utility)

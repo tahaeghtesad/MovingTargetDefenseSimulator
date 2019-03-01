@@ -16,7 +16,7 @@ rootLogger.addHandler(consoleHandler)
 rootLogger.setLevel(logging.ERROR)
 
 
-game = Game(time_limit=2 ** 256)
+game = Game(time_limit=400)
 attacker = BaseAttacker()
 defender = BaseDefender()
 

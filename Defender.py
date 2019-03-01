@@ -34,14 +34,19 @@ class BaseDefender(Player):
             self.servers[last_probe]['progress'] += 1
 
         ### Performing
+        action = self.select_action(time)
 
-        action = random.randint(-1, self.m - 1)
-        # action = -1
-        self.logger.warning(f'Doing random reimage: {action}')
         reimage(action)
 
         if self.servers[action]['status'] == -1:
             self.logger.info('Reimage was successful.')
             self.servers[action]['status'] = time
+            self.servers[action]['progress'] = 0
         else:
             self.logger.info('Reimage was unsuccessful.')
+
+    def select_action(self, time):
+        action = random.randint(-1, self.m - 1)
+        # action = -1
+        self.logger.warning(f'Doing random reimage: {action}')
+        return action
