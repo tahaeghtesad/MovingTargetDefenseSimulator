@@ -77,6 +77,12 @@ class Game:
             'progress': 0
         }
 
+    def set_probe(self, server):
+        self.probe_req = server
+
+    def set_reimage(self, server):
+        self.reimage_req = server
+
     @staticmethod
     def sigmoid(x, tth, tsl=5):
         return 1. / (1. + math.exp(-tsl * (x - tth)))
@@ -94,7 +100,6 @@ class Game:
         ### Reseting state
         self.__init__(self.m, self.downtime, self.success_increase_ratio, self.time_limit, self.probe_detection)
         for self.time in range(self.time_limit):
-            self.logger.info(self.servers)
             self.logger.info(f'Round {self.time}/{self.time_limit}')
             ### Onlining servers
 
@@ -108,8 +113,11 @@ class Game:
             p_last_probe = self.last_probe
             p_last_reimage = self.last_reimage
 
-            attacker.probe(self.time, p_last_reimage, self.probe)
-            defender.reimage(self.time, p_last_probe, self.reimage)
+            attacker.probe(self.time, p_last_reimage, self.set_probe)
+            defender.reimage(self.time, p_last_probe, self.set_reimage)
+
+            self.probe(self.probe_req)
+            self.reimage(self.reimage_req)
 
             ### Calculate utility
             nca = sum(server['control'] == Party.Attacker for server in self.servers)
@@ -120,4 +128,5 @@ class Game:
             attacker.update_utility(self.utility(nca, nd, ut[0], set[0], set[1]))
             defender.update_utility(self.utility(ncd, nd, ut[1], set[2], set[3]))
 
-            self.logger.info(self.servers)
+        self.logger.error(attacker.utility)
+        self.logger.error(defender.utility)

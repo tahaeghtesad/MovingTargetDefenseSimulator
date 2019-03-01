@@ -39,8 +39,8 @@ class BaseAttacker(Player):
 
         ### Choosing action
 
-        # action = random.randint(-1, self.m - 1)
-        action = -1
+        action = random.randint(-1, self.m - 1)
+        # action = -1
         self.logger.warning(f'Doing random probe: {action}')
 
         success = probe(action)

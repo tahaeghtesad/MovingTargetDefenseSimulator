@@ -13,14 +13,14 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
-rootLogger.setLevel(logging.INFO)
+rootLogger.setLevel(logging.ERROR)
 
 
-game = Game()
+game = Game(time_limit=2 ** 256)
 attacker = BaseAttacker()
 defender = BaseDefender()
 
 try:
     game.play(attacker, defender)
-except:
+except KeyboardInterrupt:
     exit(-1)
