@@ -1,6 +1,7 @@
-from Attacker import BaseAttacker
-from Defender import BaseDefender
 from Game import Game
+from Attackers import *
+from Defenders import *
+import time
 
 import logging
 import sys
@@ -16,11 +17,18 @@ rootLogger.addHandler(consoleHandler)
 rootLogger.setLevel(logging.ERROR)
 
 
-game = Game(time_limit=400)
-attacker = BaseAttacker()
-defender = BaseDefender()
+game = Game()
+# attacker = MaxProbeAttacker()
+# defender = PCPDefender()
+# attacker = UniformAttacker()
+# defender = ControlThresholdDefender()
+attacker = ControlThresholdAttacker()
+defender = UniformDefender()
 
 try:
     game.play(attacker, defender)
+    time.sleep(.1)
+    rootLogger.error(f'Attacker utility: {attacker.utility}')
+    rootLogger.error(f'Defender utility: {defender.utility}')
 except KeyboardInterrupt:
     exit(-1)

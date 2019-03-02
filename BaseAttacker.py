@@ -42,6 +42,8 @@ class BaseAttacker(Player):
 
         success = probe(action)
 
+        self.servers[action]['progress'] += 1
+
         if success:
             self.servers[action]['control'] = 1
 

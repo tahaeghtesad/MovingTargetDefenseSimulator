@@ -4,8 +4,8 @@ import math
 import time
 import logging
 from tqdm import tqdm
-from Attacker import BaseAttacker
-from Defender import BaseDefender
+from BaseAttacker import BaseAttacker
+from BaseDefender import BaseDefender
 
 
 class Party(Enum):
@@ -13,7 +13,7 @@ class Party(Enum):
     Defender = 2
 
 class Game:
-    def __init__(self, m=10, downtime=7, success_increase_ratio=1, time_limit=400, probe_detection=0., utenv=0, setting=0):
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0):
         self.logger = logging.getLogger(__name__)
         self.servers = []
         for i in range(m):
@@ -25,7 +25,7 @@ class Game:
 
         self.m = m
         self.downtime = downtime
-        self.success_increase_ratio = success_increase_ratio
+        self.alpha = alpha
         self.time_limit = time_limit
         self.probe_detection = probe_detection
 
@@ -51,7 +51,7 @@ class Game:
                 self.last_probe = -1
 
         if random.random() > (1 - math.exp(
-                -self.success_increase_ratio * (self.servers[server]['progress'] + 1))):  # 1 - e^alpha*(rho + 1)
+                -self.alpha * (self.servers[server]['progress'] + 1))):  # 1 - e^alpha*(rho + 1)
             self.servers[server]['control'] = Party.Attacker
             return True
 
@@ -99,7 +99,7 @@ class Game:
 
     def play(self, attacker: BaseAttacker, defender: BaseDefender):
         ### Reseting state
-        self.__init__(self.m, self.downtime, self.success_increase_ratio, self.time_limit, self.probe_detection)
+        self.__init__(self.m, self.downtime, self.alpha, self.time_limit, self.probe_detection)
         for self.time in tqdm(range(self.time_limit)):
             self.logger.info(f'Round {self.time}/{self.time_limit}')
             ### Onlining servers
@@ -127,6 +127,3 @@ class Game:
 
             attacker.update_utility(self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]))
             defender.update_utility(self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3]))
-
-        self.logger.error(attacker.utility)
-        self.logger.error(defender.utility)
