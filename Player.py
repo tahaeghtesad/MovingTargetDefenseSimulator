@@ -8,6 +8,6 @@ class Player:
         self.last_util = 0
 
     def update_utility(self, u):
-        self.logger.info(f'Received {u} utility')
+        self.logger.debug(f'Received {u} utility')
         self.last_util = u
         self.utility += u

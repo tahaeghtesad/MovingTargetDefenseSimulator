@@ -14,21 +14,31 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
-rootLogger.setLevel(logging.ERROR)
+rootLogger.setLevel(logging.INFO)
 
 
-game = Game()
+# game = Game()
 # attacker = MaxProbeAttacker()
-# defender = PCPDefender()
 # attacker = UniformAttacker()
+# attacker = ControlThresholdAttacker()
 # defender = ControlThresholdDefender()
-attacker = ControlThresholdAttacker()
-defender = UniformDefender()
+# defender = PCPDefender()
+# defender = UniformDefender()
+# defender = ControlTargetDefender()
+
+attackers = [BaseAttacker, MaxProbeAttacker, UniformAttacker, ControlThresholdAttacker]
+defenders = [BaseDefender, ControlThresholdDefender, PCPDefender, UniformDefender, MaxProbeDefender]
 
 try:
-    game.play(attacker, defender)
-    time.sleep(.1)
-    rootLogger.error(f'Attacker utility: {attacker.utility}')
-    rootLogger.error(f'Defender utility: {defender.utility}')
+    for attackerT in attackers:
+        for defenderT in defenders:
+            rootLogger.info(f'{attackerT} VS. {defenderT}')
+            game = Game()
+            attacker = attackerT()
+            defender = defenderT()
+            game.play(attacker, defender)
+            # time.sleep(.1)
+            rootLogger.info(f'Attacker utility: {int(attacker.utility)}')
+            rootLogger.info(f'Defender utility: {int(defender.utility)}')
 except KeyboardInterrupt:
     exit(-1)

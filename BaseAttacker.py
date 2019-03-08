@@ -47,10 +47,10 @@ class BaseAttacker(Player):
         if success:
             self.servers[action]['control'] = 1
 
-        self.logger.info(f'Probe was {"successful" if success else "unsuccessful"}.')
+        self.logger.debug(f'Probe was {"successful" if success else "unsuccessful"}.')
 
     def select_action(self, time):
-        action = random.randint(-1, self.m - 1)
-        # action = -1
-        self.logger.warning(f'Doing random probe: {action}')
+        # action = random.randint(-1, self.m - 1)
+        action = -1
+        # self.logger.warning(f'Doing random probe: {action}')
         return action

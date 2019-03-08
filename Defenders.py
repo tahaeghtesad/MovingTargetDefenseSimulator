@@ -5,8 +5,8 @@ import math
 
 
 class UniformDefender(BaseDefender):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('UniformDefender')
 
     def select_action(self, time, last_probe):
@@ -14,12 +14,12 @@ class UniformDefender(BaseDefender):
         for i in range(len(self.servers)):
             if self.servers[i]['status'] == -1:
                 targets.append(i)
-        return targets[random.randint(0, len(targets) - 1)]
+        return -1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]
 
 
 class MaxProbeDefender(BaseDefender):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('MaxProbeDefender')
 
     def select_action(self, time, last_probe):
@@ -36,8 +36,8 @@ class MaxProbeDefender(BaseDefender):
 
 
 class PCPDefender(BaseDefender):
-    def __init__(self, pi=1, p=1):
-        super().__init__()
+    def __init__(self, pi=1, p=1, m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('PCPDefender')
         self.pi = pi
         self.p = p
@@ -63,8 +63,8 @@ class PCPDefender(BaseDefender):
 
 
 class ControlThresholdDefender(BaseDefender):
-    def __init__(self, t=.1, alpha=.05):
-        super().__init__()
+    def __init__(self, t=.1, alpha=.05, m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('ControlThresholdDefender')
         self.t = t
         self.alpha = alpha
@@ -92,14 +92,3 @@ class ControlThresholdDefender(BaseDefender):
 
         self.last_action = reimage
         return reimage
-
-
-class ControlTargetDefender(BaseDefender):
-    def __init__(self, t=.1, alpha=.05):
-        super().__init__()
-        self.logger = logging.getLogger('ControlTargetDefender')
-        self.t = t
-        self.alpha = alpha
-
-    def select_action(self, time, last_probe):
-        raise NotImplementedError()

@@ -4,8 +4,8 @@ import random
 
 
 class UniformAttacker(BaseAttacker):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('UniformAttacker')
 
     def select_action(self, time):
@@ -17,25 +17,26 @@ class UniformAttacker(BaseAttacker):
 
 
 class MaxProbeAttacker(BaseAttacker):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,  m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('MaxProbeAttacker')
 
     def select_action(self, time):
         max = 0
-        index = 0
+        index = -1
 
         for i in range(self.m):
-            if self.servers[i]['progress'] > max:
-                index = i
-                max = self.servers[i]['progress']
+            if self.servers[i]['control'] == 0:
+                if self.servers[i]['progress'] > max:
+                    index = i
+                    max = self.servers[i]['progress']
 
         return index
 
 
 class ControlThresholdAttacker(BaseAttacker):
-    def __init__(self, t=.1):
-        super().__init__()
+    def __init__(self, t=.1, m=10, downtime=7):
+        super().__init__(m, downtime)
         self.logger = logging.getLogger('ControlThresholdAttacker')
         self.t = t
 
@@ -46,5 +47,5 @@ class ControlThresholdAttacker(BaseAttacker):
                 targets.append(i)
 
         if len(self.servers) - len(targets) < self.t * self.m:
-            return targets[random.randint(0, len(targets))]
+            return targets[random.randint(0, len(targets) - 1)]
         return -1
