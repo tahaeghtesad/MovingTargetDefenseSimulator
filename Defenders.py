@@ -23,7 +23,7 @@ class MaxProbeDefender(BaseDefender):
         self.logger = logging.getLogger('MaxProbeDefender')
 
     def select_action(self, time, last_probe):
-        max = -1
+        max = 0
         index = -1
 
         for i in range(self.m):

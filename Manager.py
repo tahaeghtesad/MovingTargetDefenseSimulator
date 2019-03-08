@@ -33,7 +33,7 @@ try:
     for attackerT in attackers:
         for defenderT in defenders:
             rootLogger.info(f'{attackerT} VS. {defenderT}')
-            game = Game()
+            game = Game(utenv=2)
             attacker = attackerT()
             defender = defenderT()
             game.play(attacker, defender)

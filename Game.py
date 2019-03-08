@@ -13,7 +13,7 @@ class Party(Enum):
     Defender = 2
 
 class Game:
-    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=3):
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0):
         self.logger = logging.getLogger(__name__)
         self.servers = []
         for i in range(m):
