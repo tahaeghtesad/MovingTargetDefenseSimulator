@@ -4,6 +4,7 @@ import math
 import time
 import logging
 from tqdm import tqdm
+import numpy as np
 from BaseAttacker import BaseAttacker
 from BaseDefender import BaseDefender
 
@@ -45,15 +46,15 @@ class Game:
 
         if self.servers[server]['status'] == -1:
             self.servers[server]['progress'] += 1
-            if random.random() > self.probe_detection:
+            if random.random() >= self.probe_detection:
                 self.last_probe = server
             else:
                 self.last_probe = -1
 
-        if random.random() > (1 - math.exp(
-                -self.alpha * (self.servers[server]['progress'] + 1))):  # 1 - e^alpha*(rho + 1)
-            self.servers[server]['control'] = Party.Attacker
-            return True
+            if random.random() < (1 - math.exp(
+                    -self.alpha * (self.servers[server]['progress'] + 1))):  # 1 - e^-alpha*(rho + 1)
+                self.servers[server]['control'] = Party.Attacker
+                return True
 
         return False
 
@@ -98,7 +99,6 @@ class Game:
         return w * Game.sigmoid(nc / self.m, tth_1) + (1 - w) * Game.sigmoid((nc + nd) / self.m, tth_2)
 
     def play(self, attacker: BaseAttacker, defender: BaseDefender):
-        ### Reseting state
         for self.time in range(self.time_limit):
             self.logger.debug(f'Round {self.time}/{self.time_limit}')
             ### Onlining servers

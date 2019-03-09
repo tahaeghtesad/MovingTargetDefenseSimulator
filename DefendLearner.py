@@ -1,9 +1,11 @@
 from keras.models import Sequential
 from keras.layers import Flatten, Dense
+from keras.backend import tensorflow_backend
 
 from BaseDefender import BaseDefender
 from Experience import Experience
 
+import tensorflow as tf
 import numpy as np
 
 import os
@@ -27,38 +29,40 @@ class DefendLearner(BaseDefender):
         new_state = []
         for server in self.servers:
             up = int(server['status'] == -1)
-            time_since_last_re_image = 0 if up else time - server['status']
+            time_to_up = 0 if up else server['status'] + self.downtime - time
             observed_progress = server['progress']
             prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))
 
             new_state.append(
-                [up, time_since_last_re_image, observed_progress, prob]
+                [up, time_to_up, observed_progress, prob]
             )
 
         self.experience.record_state(new_state)
 
         if np.random.rand() < self.epsilon:
-            action = np.random.randint(0, self.m)
+            action = np.random.randint(0, self.m + 1)
         else:
             action = self.experience.predict(new_state)
 
         self.experience.record_action(action)
 
         if time % 128 == 0:
-            self.experience.train_model(128)
+            self.experience.train_model()
 
-        return action
+        return action - 1
 
     @staticmethod
     def create_model(m=10):
+
+        config = tf.ConfigProto(device_count={"CPU": 8})
+        tensorflow_backend.set_session(tf.Session(config=config))
+
         model = Sequential()
         model.add(Dense(m * 4, activation='sigmoid', input_shape=(m, 4, )))
         model.add(Flatten())
         model.add(Dense(128, activation='relu'))
-        model.add(Dense(m, activation='softmax'))
+        model.add(Dense(m + 1, activation='softmax'))
         model.compile('adam', 'mse')
-
-
 
         if os.path.isfile('weights.h5'):
             model.load_weights('weights.h5')

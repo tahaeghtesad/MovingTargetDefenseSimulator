@@ -2,6 +2,7 @@ from tqdm import tqdm
 
 from Attackers import ControlThresholdAttacker
 from DefendLearner import DefendLearner
+from multiprocessing import Pool
 from Game import Game
 
 import logging
@@ -23,16 +24,18 @@ rootLogger.addHandler(fileHandler)
 
 rootLogger.setLevel(logging.INFO)
 
+model = DefendLearner.create_model(10)
+
+
 episodes = 1000
 try:
-    for epoch in tqdm(range(episodes)):
-        game = Game(utenv=2)
+
+    for i in tqdm(range(episodes)):
+        game = Game()
         attacker = ControlThresholdAttacker()
-        defender = DefendLearner(epsilon=(episodes - epoch) / episodes)
+        defender = DefendLearner(model=model, epsilon=(episodes - i) / episodes)
         game.play(attacker, defender)
-        time.sleep(.01)
-        rootLogger.info(f'Attacker utility: {int(attacker.utility)}')
-        rootLogger.info(f'Defender utility: {int(defender.utility)}')
+        rootLogger.info(f'Attacker/Deffender:{int(attacker.utility)}/{int(defender.utility)}')
 
 except KeyboardInterrupt:
     exit(-1)
