@@ -13,7 +13,7 @@ class UniformAttacker(BaseAttacker):
         for i in range(len(self.servers)):
             if self.servers[i]['control'] == 0:
                 targets.append(i)
-        return targets[random.randint(0, len(targets) - 1)]
+        return -1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]
 
 
 class MaxProbeAttacker(BaseAttacker):
@@ -47,5 +47,5 @@ class ControlThresholdAttacker(BaseAttacker):
                 targets.append(i)
 
         if len(self.servers) - len(targets) < self.t * self.m:
-            return targets[random.randint(0, len(targets) - 1)]
+            return -1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]
         return -1

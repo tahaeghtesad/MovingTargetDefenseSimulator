@@ -79,12 +79,6 @@ class Game:
             'progress': 0
         }
 
-    def set_probe(self, server):
-        self.probe_req = server
-
-    def set_reimage(self, server):
-        self.reimage_req = server
-
     @staticmethod
     def sigmoid(x, tth, tsl=5):
         return 1. / (1. + math.exp(-tsl * (x - tth)))
@@ -113,11 +107,8 @@ class Game:
             p_last_probe = self.last_probe
             p_last_reimage = self.last_reimage
 
-            attacker.probe(self.time, p_last_reimage, self.set_probe)
-            defender.reimage(self.time, p_last_probe, self.set_reimage)
-
-            self.probe(self.probe_req)
-            self.reimage(self.reimage_req)
+            attacker.probe(self.time, p_last_reimage, self.probe)
+            defender.reimage(self.time, p_last_probe, self.reimage)
 
             ### Calculate utility
             nca = sum(server['control'] == Party.Attacker for server in self.servers)
