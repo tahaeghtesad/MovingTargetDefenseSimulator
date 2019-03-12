@@ -10,6 +10,7 @@ import numpy as np
 
 import os
 import math
+import logging
 
 
 class DefendLearner(BaseDefender):
@@ -19,6 +20,7 @@ class DefendLearner(BaseDefender):
         self.alpha = alpha
         self.epsilon = epsilon
         self.experience = Experience(model if model is not None else DefendLearner.create_model(m))
+        self.logger = logging.getLogger(__name__)
 
     def update_utility(self, u):
         super().update_utility(u)
@@ -31,10 +33,10 @@ class DefendLearner(BaseDefender):
             up = int(server['status'] == -1)
             time_to_up = 0 if up else server['status'] + self.downtime - time
             observed_progress = server['progress']
-            prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))
+            prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))  # probability of attacker controlling that server
 
             new_state.append(
-                [up, time_to_up, observed_progress, prob]
+                [up, time_to_up, observed_progress]
             )
 
         self.experience.record_state(new_state)
@@ -47,6 +49,7 @@ class DefendLearner(BaseDefender):
         self.experience.record_action(action)
 
         if time % 128 == 0:
+            self.logger.debug('Training...')
             self.experience.train_model()
 
         return action - 1
@@ -58,13 +61,14 @@ class DefendLearner(BaseDefender):
         tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
-        model.add(Dense(m * 4, activation='sigmoid', input_shape=(m, 4, )))
+        model.add(Dense(m * 4, activation='relu', input_shape=(m, 3, )))
         model.add(Flatten())
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(m + 1, activation='softmax'))
+        model.add(Dense(m * 64, activation='sigmoid'))
+        model.add(Dense(m + 1, activation='tanh'))
         model.compile('adam', 'mse')
 
         if os.path.isfile('weights.h5'):
+            logging.info('Loading weight files.')
             model.load_weights('weights.h5')
 
         return model

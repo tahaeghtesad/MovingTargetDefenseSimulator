@@ -38,7 +38,7 @@ class BaseDefender(Player):
 
         reimage(action)
 
-        if self.servers[action]['status'] == -1:
+        if action != -1 and self.servers[action]['status'] == -1:
             self.logger.debug('Reimage was successful.')
             self.servers[action]['status'] = time
             self.servers[action]['progress'] = 0

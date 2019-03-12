@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Experience:
-    def __init__(self, model: Sequential, dr=.7, max_memory_size=128):
+    def __init__(self, model: Sequential, dr=.1, max_memory_size=128):
         self.model = model
         self.exp = []
         self.size = max_memory_size
