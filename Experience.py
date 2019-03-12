@@ -47,4 +47,3 @@ class Experience:
             trainings[i][self.exp[i][1]] = self.exp[i][2] + self.dr * q_sa
 
         self.model.fit(np.array(states), trainings, verbose=0)
-        self.model.save_weights('weights.h5')

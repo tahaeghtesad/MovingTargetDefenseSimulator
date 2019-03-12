@@ -11,7 +11,7 @@ class UniformAttacker(BaseAttacker):
     def select_action(self, time):
         targets = []
         for i in range(len(self.servers)):
-            if self.servers[i]['control'] == 0:
+            if self.servers[i]['control'] == 0 and self.servers[i]['status'] == -1:
                 targets.append(i)
         return -1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]
 
@@ -22,11 +22,11 @@ class MaxProbeAttacker(BaseAttacker):
         self.logger = logging.getLogger('MaxProbeAttacker')
 
     def select_action(self, time):
-        max = 0
+        max = -1
         index = -1
 
         for i in range(self.m):
-            if self.servers[i]['control'] == 0:
+            if self.servers[i]['control'] == 0 and self.servers[i]['status'] == -1:
                 if self.servers[i]['progress'] > max:
                     index = i
                     max = self.servers[i]['progress']
@@ -42,10 +42,13 @@ class ControlThresholdAttacker(BaseAttacker):
 
     def select_action(self, time):
         targets = []
+        defender_control_or_down = 0
         for i in range(len(self.servers)):
             if self.servers[i]['control'] == 0:
-                targets.append(i)
+                if self.servers[i]['status'] == -1:
+                    targets.append(i)
+                defender_control_or_down += 1
 
-        if len(self.servers) - len(targets) < self.t * self.m:
+        if len(self.servers) - defender_control_or_down < self.t * self.m:
             return -1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]
         return -1

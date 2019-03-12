@@ -11,3 +11,6 @@ class Player:
         self.logger.debug(f'Received {u} utility')
         self.last_util = u
         self.utility += u
+
+    def finalize(self):
+        pass

@@ -1,7 +1,10 @@
 from tqdm import tqdm
 
 from Attackers import *
+from Defenders import *
+from AttackLearner import AttackLearner
 from DefendLearner import DefendLearner
+
 from multiprocessing import Pool
 from Game import Game
 
@@ -31,10 +34,17 @@ episodes = 1000
 try:
 
     for i in tqdm(range(episodes)):
-        game = Game()
-        attacker = UniformAttacker()
-        defender = DefendLearner(model=model, epsilon=(episodes - i) / episodes)
+        game = Game(utenv=2, setting=1)
+        attacker = AttackLearner(epsilon=(episodes-i)/episodes)
+        defender = MaxProbeDefender(pi=2)
+
+        # attacker = UniformAttacker()
+        # defender = DefendLearner(epsilon=(episodes-i)/episodes)
+
         game.play(attacker, defender)
+
+        attacker.finalize()
+        defender.finalize()
         rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Deffender:{int(attacker.utility)}/{int(defender.utility)}')
 
 except KeyboardInterrupt:

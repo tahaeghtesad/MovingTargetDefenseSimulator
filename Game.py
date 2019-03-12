@@ -54,9 +54,11 @@ class Game:
             if random.random() < (1 - math.exp(
                     -self.alpha * (self.servers[server]['progress'] + 1))):  # 1 - e^-alpha*(rho + 1)
                 self.servers[server]['control'] = Party.Attacker
-                return True
+                return 1  # Attacker now controls the server
+            else:
+                return 0  # Attacker just probed a server
 
-        return False
+        return -1  # The server was down
 
     def reimage(self, server):
         if not -1 <= server < self.m:
@@ -84,9 +86,9 @@ class Game:
         return 1. / (1. + math.exp(-tsl * (x - tth)))
 
     @staticmethod
-    def get_params(env, setting): # env = [1: control/avail 2: control/config 3:disrupt/avail 4:disrupt/confid] - setting = [0:low 1:major 2:high]
+    def get_params(env, setting): # env = [1: control/avail 2: control/config 3:disrupt/avail 4:disrupt/confid] - setting = [0:low 1:major 2:high] #5: my setting!
         utenv = [(1, 1), (1, 0), (0, 1), (0, 0)]
-        setenv = [(.2, .2, .2, .2), (.5, .5, .5, .5), (.8, .8, .8, .8)]
+        setenv = [(.2, .2, .2, .2), (.5, .5, .5, .5), (.8, .8, .8, .8), (.2, .2, .8, .8)]
         return utenv[env], setenv[setting]
 
     def utility(self, nc, nd, w, tth_1, tth_2):

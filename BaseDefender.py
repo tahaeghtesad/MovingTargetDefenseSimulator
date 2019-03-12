@@ -35,6 +35,7 @@ class BaseDefender(Player):
 
         ### Performing
         action = self.select_action(time, last_probe)
+        self.logger.debug(f'Selecting server {action} to reimage.')
 
         reimage(action)
 
