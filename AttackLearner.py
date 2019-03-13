@@ -20,7 +20,7 @@ class AttackLearner(BaseAttacker):
         self.alpha = alpha
         self.epsilon = epsilon
         self.model = model if model is not None else AttackLearner.create_model(m)
-        self.train=train
+        self.train = train
         self.experience = Experience(self.model)
         self.logger = logging.getLogger(__name__)
 

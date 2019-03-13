@@ -27,15 +27,15 @@ rootLogger.addHandler(fileHandler)
 
 rootLogger.setLevel(logging.INFO)
 
-defend_model = DefenceLearner.create_model(m=2)
-attack_model = AttackLearner.create_model(m=2)
+defend_model = DefenceLearner.create_model()
+attack_model = AttackLearner.create_model()
 
 episodes = 1000
 try:
 
     for i in tqdm(range(episodes)):
-        game = Game(utenv=2, setting=1, m=2)
-        attacker = AttackLearner(epsilon=(episodes-i)/episodes, model=attack_model, m=2)
+        game = Game(utenv=2, setting=1)
+        attacker = AttackLearner(epsilon=(episodes-i)/episodes, model=attack_model, train=False)
         defender = MaxProbeDefender(pi=2)
 
         # attacker = UniformAttacker()
