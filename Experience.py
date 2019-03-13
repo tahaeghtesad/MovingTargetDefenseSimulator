@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Experience:
-    def __init__(self, model: Sequential, dr=.1, max_memory_size=128):
+    def __init__(self, model: Sequential, dr=.7, max_memory_size=128):
         self.model = model
         self.exp = []
         self.size = max_memory_size
@@ -46,4 +46,5 @@ class Experience:
             q_sa = np.max(q_sas[i])
             trainings[i][self.exp[i][1]] = self.exp[i][2] + self.dr * q_sa
 
-        self.model.fit(np.array(states), trainings, verbose=0)
+        self.model.fit(np.array(states), trainings, epochs=8, batch_size=self.size, verbose=0)
+

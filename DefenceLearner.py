@@ -13,13 +13,14 @@ import math
 import logging
 
 
-class DefendLearner(BaseDefender):
+class DefenceLearner(BaseDefender):
 
-    def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7):
+    def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else DefendLearner.create_model(m)
+        self.model = model if model is not None else DefenceLearner.create_model(m)
+        self.train=train
         self.experience = Experience(self.model)
         self.logger = logging.getLogger(__name__)
 
@@ -42,21 +43,25 @@ class DefendLearner(BaseDefender):
 
         self.experience.record_state(new_state)
 
-        if np.random.rand() < self.epsilon:
-            action = np.random.randint(0, self.m + 1)
+        if self.train:
+            if np.random.rand() < self.epsilon:
+                action = np.random.randint(0, self.m + 1)
+            else:
+                action = self.experience.predict(new_state)
         else:
             action = self.experience.predict(new_state)
 
         self.experience.record_action(action)
 
-        if time % 128 == 0:
+        if self.train and time % 128 == 0:
             self.logger.debug('Training...')
             self.experience.train_model()
 
         return action - 1
 
-    def finalize(self):
-        self.model.save_weights('defender-weights.h5')
+    def finalize(self, f):
+        if f and self.train:
+            self.model.save_weights('defender-weights.h5')
 
     @staticmethod
     def create_model(m=10):

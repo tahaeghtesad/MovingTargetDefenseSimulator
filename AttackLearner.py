@@ -15,11 +15,12 @@ import logging
 
 class AttackLearner(BaseAttacker):
 
-    def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7):
+    def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
         self.model = model if model is not None else AttackLearner.create_model(m)
+        self.train=train
         self.experience = Experience(self.model)
         self.logger = logging.getLogger(__name__)
 
@@ -42,33 +43,37 @@ class AttackLearner(BaseAttacker):
 
         self.experience.record_state(new_state)
 
-        if np.random.rand() < self.epsilon:
-            action = np.random.randint(0, self.m + 1)
+        if self.train:
+            if np.random.rand() < self.epsilon:
+                action = np.random.randint(0, self.m + 1)
+            else:
+                action = self.experience.predict(new_state)
         else:
             action = self.experience.predict(new_state)
 
         self.experience.record_action(action)
 
-        if time % 128 == 0:
+        if self.train and time % 128 == 0:
             self.logger.debug('Training...')
             self.experience.train_model()
 
         return action - 1
 
-    def finalize(self):
-        self.model.save_weights('attacker-weights.h5')
+    def finalize(self, f):
+        if f and self.train:
+            self.model.save_weights('attacker-weights.h5')
 
     @staticmethod
     def create_model(m=10):
 
-        # config = tf.ConfigProto(device_count={"CPU": 8})
-        # tensorflow_backend.set_session(tf.Session(config=config))
+        config = tf.ConfigProto(device_count={"CPU": 8})
+        tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
-        model.add(Dense(m * 4, activation='relu', input_shape=(m, 4, )))
+        model.add(Dense(m * 4, activation='sigmoid', input_shape=(m, 4, )))
         model.add(Flatten())
-        model.add(Dense(m * 64, activation='sigmoid'))
-        model.add(Dense(m + 1, activation='tanh'))
+        model.add(Dense(m * 64, activation='tanh'))
+        model.add(Dense(m + 1))
         model.compile('adam', 'mse')
 
         if os.path.isfile('attacker-weights.h5'):

@@ -12,5 +12,5 @@ class Player:
         self.last_util = u
         self.utility += u
 
-    def finalize(self):
+    def finalize(self, b):
         pass
