@@ -3,7 +3,8 @@ from keras.layers import Flatten, Dense
 from keras.backend import tensorflow_backend
 
 from BaseAttacker import BaseAttacker
-from Experience import Experience
+from NNExperience import NNExperience
+from QExperience import QExperience
 
 import tensorflow as tf
 import numpy as np
@@ -11,17 +12,20 @@ import numpy as np
 import os
 import math
 import logging
+import h5py
+import pickle
 
 
 class AttackLearner(BaseAttacker):
 
-    def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
+    def __init__(self, model=None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else AttackLearner.create_model(m)
+        self.model = model if model is not None else AttackLearner.create_neural_model(m)
         self.train = train
-        self.experience = Experience(self.model)
+        # self.experience = NNExperience(self.model)
+        self.experience = QExperience(self.model, m)
         self.logger = logging.getLogger(__name__)
 
     def update_utility(self, u):
@@ -61,10 +65,12 @@ class AttackLearner(BaseAttacker):
 
     def finalize(self, f):
         if f and self.train:
-            self.model.save_weights('attacker-weights.h5')
+            # self.model.save_weights('attacker-weights.h5')
+            with open('attacker-weights.h5', 'wb') as file:
+                pickle.dump(self.model, file)
 
     @staticmethod
-    def create_model(m=10):
+    def create_neural_model(m=10):
 
         config = tf.ConfigProto(device_count={"CPU": 8})
         tensorflow_backend.set_session(tf.Session(config=config))
@@ -82,3 +88,12 @@ class AttackLearner(BaseAttacker):
 
         return model
 
+    @staticmethod
+    def create_q_table():
+
+        if os.path.isfile('attacker-weights.h5'):
+            logging.info('Loading weight files.')
+            with open('attacker-weights.h5', 'rb') as file:
+                return pickle.load(file)
+
+        return {}

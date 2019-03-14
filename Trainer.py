@@ -27,24 +27,31 @@ rootLogger.addHandler(fileHandler)
 
 rootLogger.setLevel(logging.INFO)
 
-defend_model = DefenceLearner.create_model()
-attack_model = AttackLearner.create_model()
+number_of_servers = 10
 
-episodes = 1000
+# defend_model = DefenceLearner.create_neural_model()
+# attack_model = AttackLearner.create_neural_model()
+
+defend_model = DefenceLearner.create_q_table(number_of_servers)
+attack_model = AttackLearner.create_q_table()
+
+
+episodes = 100000
 try:
 
     for i in tqdm(range(episodes)):
-        game = Game(utenv=2, setting=1)
-        attacker = AttackLearner(epsilon=(episodes-i)/episodes, model=attack_model, train=False)
-        defender = MaxProbeDefender(pi=2)
+
+        game = Game(utenv=2, setting=1, m=number_of_servers)
+        attacker = AttackLearner(m=number_of_servers, epsilon=(episodes-i)/episodes, model=attack_model)
+        defender = MaxProbeDefender(pi=3, m=number_of_servers)
 
         # attacker = UniformAttacker()
         # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
 
         game.play(attacker, defender)
 
-        attacker.finalize(i == episodes-1)
-        defender.finalize(i == episodes-1)
+        attacker.finalize(i % 100 == 0)
+        defender.finalize(i % 100 == 5)
         rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender:{int(attacker.utility)}/{int(defender.utility)}')
 
 except KeyboardInterrupt:

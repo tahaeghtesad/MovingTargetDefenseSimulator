@@ -3,7 +3,7 @@ from keras.layers import Flatten, Dense
 from keras.backend import tensorflow_backend
 
 from BaseDefender import BaseDefender
-from Experience import Experience
+from NNExperience import NNExperience
 
 import tensorflow as tf
 import numpy as np
@@ -19,9 +19,9 @@ class DefenceLearner(BaseDefender):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else DefenceLearner.create_model(m)
+        self.model = model if model is not None else DefenceLearner.create_neural_model(m)
         self.train=train
-        self.experience = Experience(self.model)
+        self.experience = NNExperience(self.model)
         self.logger = logging.getLogger(__name__)
 
     def update_utility(self, u):
@@ -64,10 +64,10 @@ class DefenceLearner(BaseDefender):
             self.model.save_weights('defender-weights.h5')
 
     @staticmethod
-    def create_model(m=10):
+    def create_neural_model(m=10):
 
-        # config = tf.ConfigProto(device_count={"CPU": 8})
-        # tensorflow_backend.set_session(tf.Session(config=config))
+        config = tf.ConfigProto(device_count={"CPU": 8})
+        tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
         model.add(Dense(m * 4, activation='relu', input_shape=(m, 3, )))
@@ -82,3 +82,7 @@ class DefenceLearner(BaseDefender):
 
         return model
 
+    @staticmethod
+    def create_q_table(m=10, downtime=7):
+        # server index / up-or-down / time_to_up / expected number of probes / actions.
+        return np.zeros((m, 2, downtime + 1, 12, m + 1))
