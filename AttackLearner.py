@@ -1,12 +1,12 @@
-from keras.models import Sequential
-from keras.layers import Flatten, Dense
-from keras.backend import tensorflow_backend
+# from keras.models import Sequential
+# from keras.layers import Flatten, Dense
+# from keras.backend import tensorflow_backend
 
 from BaseAttacker import BaseAttacker
 from NNExperience import NNExperience
 from QExperience import QExperience
 
-import tensorflow as tf
+# import tensorflow as tf
 import numpy as np
 
 import os
@@ -22,7 +22,8 @@ class AttackLearner(BaseAttacker):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else AttackLearner.create_neural_model(m)
+        # self.model = model if model is not None else AttackLearner.create_neural_model(m)
+        self.model = model if model is not None else AttackLearner.create_q_table()
         self.train = train
         # self.experience = NNExperience(self.model)
         self.experience = QExperience(self.model, m)
@@ -69,24 +70,24 @@ class AttackLearner(BaseAttacker):
             with open('attacker-weights.h5', 'wb') as file:
                 pickle.dump(self.model, file)
 
-    @staticmethod
-    def create_neural_model(m=10):
-
-        config = tf.ConfigProto(device_count={"CPU": 8})
-        tensorflow_backend.set_session(tf.Session(config=config))
-
-        model = Sequential()
-        model.add(Dense(m * 4, activation='sigmoid', input_shape=(m, 4, )))
-        model.add(Flatten())
-        model.add(Dense(m * 64, activation='tanh'))
-        model.add(Dense(m + 1))
-        model.compile('adam', 'mse')
-
-        if os.path.isfile('attacker-weights.h5'):
-            logging.info('Loading weight files.')
-            model.load_weights('attacker-weights.h5')
-
-        return model
+    # @staticmethod
+    # def create_neural_model(m=10):
+    #
+    #     config = tf.ConfigProto(device_count={"CPU": 8})
+    #     tensorflow_backend.set_session(tf.Session(config=config))
+    #
+    #     model = Sequential()
+    #     model.add(Dense(m * 4, activation='sigmoid', input_shape=(m, 4, )))
+    #     model.add(Flatten())
+    #     model.add(Dense(m * 64, activation='tanh'))
+    #     model.add(Dense(m + 1))
+    #     model.compile('adam', 'mse')
+    #
+    #     if os.path.isfile('attacker-weights.h5'):
+    #         logging.info('Loading weight files.')
+    #         model.load_weights('attacker-weights.h5')
+    #
+    #     return model
 
     @staticmethod
     def create_q_table():
