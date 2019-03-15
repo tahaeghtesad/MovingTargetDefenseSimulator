@@ -78,9 +78,9 @@ class AttackLearner(BaseAttacker):
         tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
-        model.add(Dense(m * 4, activation='sigmoid', input_shape=(m, 4, )))
+        model.add(Dense(m * m, activation='sigmoid', input_shape=(m, 4, )))
         model.add(Flatten())
-        model.add(Dense(m * 64, activation='tanh'))
+        model.add(Dense(m * m * m * m, activation='tanh'))
         model.add(Dense(m + 1))
         model.compile('adam', 'mse')
 

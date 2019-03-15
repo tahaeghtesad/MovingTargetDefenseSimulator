@@ -10,6 +10,9 @@
 
 
 module load python/3.6
+module load CUDA/10.0.130
+module load GCC/7.2.0-2.29
+
 cd MovingTargetDefenceSimulator
 
 source venv/bin/activate
