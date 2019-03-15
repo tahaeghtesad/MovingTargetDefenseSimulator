@@ -30,10 +30,10 @@ rootLogger.setLevel(logging.INFO)
 number_of_servers = 10
 
 # defend_model = DefenceLearner.create_neural_model()
-# attack_model = AttackLearner.create_neural_model()
+attack_model = AttackLearner.create_neural_model(m=number_of_servers)
 
-defend_model = DefenceLearner.create_q_table(number_of_servers)
-attack_model = AttackLearner.create_q_table()
+# defend_model = DefenceLearner.create_q_table(number_of_servers)
+# attack_model = AttackLearner.create_q_table()
 
 
 episodes = 100000
@@ -50,8 +50,8 @@ try:
 
         game.play(attacker, defender)
 
-        attacker.finalize(i % 100 == 0)
-        defender.finalize(i % 100 == 5)
+        attacker.finalize(i % 1000 == 0)
+        defender.finalize(i % 1000 == 0)
         rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender:{int(attacker.utility)}/{int(defender.utility)}')
 
 except KeyboardInterrupt:
