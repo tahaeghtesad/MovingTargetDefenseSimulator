@@ -43,17 +43,22 @@ class BaseAttacker(Player):
 
         success = probe(action)
 
+        if action == -1:
+            return
+
         if success == 1:
             self.servers[action]['control'] = 1
-            self.logger.debug(f'Probe was successful.')
+            self.servers[action]['progress'] += 1
+            self.servers[action]['status'] = -1
+            self.logger.debug('Probe was successful.')
         elif success == 0:
             self.servers[action]['progress'] += 1
-            self.logger.debug(f'Probe was unsuccessful.')
+            self.logger.debug('Probe was unsuccessful.')
         elif success == -1:
-            self.servers[action]['status'] = self.servers[action]['status'] - 1 if self.servers[action]['status'] != -1 else time
+            self.servers[action]['status'] = self.servers[action]['status'] if self.servers[action]['status'] != -1 else time
             self.servers[action]['progress'] = 0
             self.servers[action]['control'] = 0
-            self.logger.debug(f'Server was down')
+            self.logger.debug('Server was down.')
 
     def select_action(self, time):
         # action = random.randint(-1, self.m - 1)
