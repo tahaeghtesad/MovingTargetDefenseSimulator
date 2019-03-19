@@ -14,7 +14,7 @@ class Party(Enum):
     Defender = 2
 
 class Game:
-    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0):
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
         self.logger = logging.getLogger(__name__)
         self.servers = []
         for i in range(m):
@@ -29,9 +29,11 @@ class Game:
         self.alpha = alpha
         self.time_limit = time_limit
         self.probe_detection = probe_detection
+        self.ca = 0
 
         self.last_probe = -1  # -1 means that the last probe is not detectable
         self.last_reimage = -1  # -1 means that the last reimage is not detectable
+        self.last_attack_cost = 0
 
         self.utenv, self.setting = Game.get_params(utenv, setting)
 
@@ -42,7 +44,10 @@ class Game:
             raise Exception('Chosen server is not in range')
 
         if server == -1:
+            self.last_attack_cost = 0
             return False
+
+        self.last_attack_cost = -self.ca
 
         if self.servers[server]['status'] == -1:
             self.servers[server]['progress'] += 1
@@ -117,5 +122,5 @@ class Game:
             ncd = sum(server['control'] == Party.Defender and server['status'] == -1 for server in self.servers)
             nd = sum(server['status'] > -1 for server in self.servers)
 
-            attacker.update_utility(self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]))
+            attacker.update_utility(self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]) + self.ca)
             defender.update_utility(self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3]))
