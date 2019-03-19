@@ -13,14 +13,14 @@ import math
 import logging
 
 
-class DefenceLearner(BaseDefender):
+class DefenseLearner(BaseDefender):
 
     def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else DefenceLearner.create_neural_model(m)
-        self.train=train
+        self.model = model if model is not None else DefenseLearner.create_neural_model(m)
+        self.train = train
         self.experience = NNExperience(self.model)
         self.logger = logging.getLogger(__name__)
 
