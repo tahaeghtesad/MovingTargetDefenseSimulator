@@ -18,7 +18,7 @@ class UniformDefender(BaseDefender):
 
 
 class MaxProbeDefender(BaseDefender):
-    def __init__(self, m=10, downtime=7, pi=3):
+    def __init__(self, m=10, downtime=7, pi=7):
         super().__init__(m, downtime)
         self.logger = logging.getLogger('MaxProbeDefender')
         self.pi = pi
@@ -51,10 +51,10 @@ class PCPDefender(BaseDefender):
 
         target = -1
         for i in range(self.m):
-            if self.servers[i]['progress'] > self.pi:
+            if self.servers[i]['progress'] >= self.pi:
                 target = i
 
-            if 1 <= self.servers[i]['progress'] and self.last_probes[i] + self.p > time:
+            if 1 <= self.servers[i]['progress'] and self.last_probes[i] + self.p < time:
                 target = i
 
         if target != -1:
