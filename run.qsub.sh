@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #PBS -N MTD
-#PBS -l nodes=1
-#PBS -q gpu-tesla
+#PBS -l nodes=1:ppn=32
+#PBS -l mem=128gb
 
 module load python/3.6.0
 #module load cuda-toolkit/6.5

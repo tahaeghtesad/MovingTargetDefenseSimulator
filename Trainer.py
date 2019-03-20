@@ -22,8 +22,8 @@ rootLogger.addHandler(fileHandler)
 
 rootLogger.setLevel(logging.INFO)
 
-number_of_servers = 2
-episodes = 1000
+number_of_servers = 3
+episodes = 10000
 
 whole_exp = AttackerQExperience('attacker-total', m=number_of_servers)
 
