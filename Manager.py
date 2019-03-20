@@ -33,12 +33,12 @@ try:
     for attackerT in attackers:
         for defenderT in defenders:
             rootLogger.info(f'{attackerT} VS. {defenderT}')
-            game = Game(utenv=2, setting=1)
+            game = Game(utenv=1, setting=1)
             attacker = attackerT()
             defender = defenderT()
             game.play(attacker, defender)
             # time.sleep(.1)
-            rootLogger.info(f'Attacker utility: {int(attacker.utility)}')
-            rootLogger.info(f'Defender utility: {int(defender.utility)}')
+            rootLogger.info(f'Attacker utility: {attacker.utility:.0f}')
+            rootLogger.info(f'Defender utility: {defender.utility:.0f}')
 except KeyboardInterrupt:
     exit(-1)

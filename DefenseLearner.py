@@ -62,27 +62,3 @@ class DefenseLearner(BaseDefender):
     def finalize(self, f):
         if f and self.train:
             self.model.save_weights('defender-weights.h5')
-
-    @staticmethod
-    def create_neural_model(m=10):
-
-        config = tf.ConfigProto(device_count={"CPU": 8})
-        tensorflow_backend.set_session(tf.Session(config=config))
-
-        model = Sequential()
-        model.add(Dense(m * 4, activation='relu', input_shape=(m, 3, )))
-        model.add(Flatten())
-        model.add(Dense(m * 64, activation='sigmoid'))
-        model.add(Dense(m + 1, activation='tanh'))
-        model.compile('adam', 'mse')
-
-        if os.path.isfile('defender-weights.h5'):
-            logging.info('Loading weight files.')
-            model.load_weights('defender-weights.h5')
-
-        return model
-
-    @staticmethod
-    def create_q_table(m=10, downtime=7):
-        # server index / up-or-down / time_to_up / expected number of probes / actions.
-        return np.zeros((m, 2, downtime + 1, 12, m + 1))

@@ -1,40 +1,28 @@
-from keras.models import Sequential
-from keras.layers import Flatten, Dense
-from keras.backend import tensorflow_backend
+import logging
 
-from BaseAttacker import BaseAttacker
-from NNExperience import NNExperience
-from QExperience import QExperience
-
-import tensorflow as tf
 import numpy as np
 
-import os
-import math
-import logging
-import h5py
-import gzip
-import pickle
+from BaseAttacker import BaseAttacker
+from Experience import Experience
 
 
 class AttackLearner(BaseAttacker):
 
-    def __init__(self, model=None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
+    def __init__(self, experience: Experience, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else AttackLearner.create_neural_model(m)
-        # self.model = model if model is not None else AttackLearner.create_q_table()
         self.train = train
-        self.experience = NNExperience(self.model)
-        # self.experience = QExperience(self.model, m)
+        self.experience = experience
         self.logger = logging.getLogger(__name__)
+        self.time = 0
 
     def update_utility(self, u):
         super().update_utility(u)
         self.experience.record_reward(u)
 
     def select_action(self, time):
+        self.time = time
 
         new_state = []
         for server in self.servers:
@@ -59,43 +47,11 @@ class AttackLearner(BaseAttacker):
 
         self.experience.record_action(action)
 
-        if self.train and time % 128 == 0:
-            self.logger.debug('Training...')
-            self.experience.train_model()
+        # if self.train:
+        #     self.experience.train_model()
 
         return action - 1
 
     def finalize(self, f):
         if f and self.train:
-            self.model.save_weights('attacker-weights.h5')
-            # with gzip.open('attacker-weights.h5.gz', 'wb') as file:
-            #     pickle.dump(self.model, file)
-
-    @staticmethod
-    def create_neural_model(m=10):
-
-        config = tf.ConfigProto(device_count={"CPU": 8})
-        tensorflow_backend.set_session(tf.Session(config=config))
-
-        model = Sequential()
-        model.add(Dense(m * m, activation='sigmoid', input_shape=(m, 4, )))
-        model.add(Flatten())
-        model.add(Dense(m * m * m * m, activation='tanh'))
-        model.add(Dense(m + 1))
-        model.compile('adam', 'mse')
-
-        if os.path.isfile('attacker-weights.h5'):
-            logging.info('Loading weight files.')
-            model.load_weights('attacker-weights.h5')
-
-        return model
-
-    @staticmethod
-    def create_q_table():
-
-        if os.path.isfile('attacker-weights.h5'):
-            logging.info('Loading weight files.')
-            with gzip.open('attacker-weights.h5.gz', 'rb') as file:
-                return pickle.load(file)
-
-        return {}
+            self.experience.store()

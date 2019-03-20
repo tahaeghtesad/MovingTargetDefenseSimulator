@@ -5,11 +5,15 @@ import math
 
 
 class UniformDefender(BaseDefender):
-    def __init__(self, m=10, downtime=7):
+    def __init__(self, p=1, m=10, downtime=7):
         super().__init__(m, downtime)
         self.logger = logging.getLogger('UniformDefender')
+        self.p = p
 
     def select_action(self, time, last_probe):
+        if time % self.p != 0:
+            return -1
+
         targets = []
         for i in range(len(self.servers)):
             if self.servers[i]['status'] == -1:
