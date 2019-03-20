@@ -29,7 +29,7 @@ class Game:
         self.alpha = alpha
         self.time_limit = time_limit
         self.probe_detection = probe_detection
-        self.ca = 0
+        self.ca = ca
 
         self.last_probe = -1  # -1 means that the last probe is not detectable
         self.last_reimage = -1  # -1 means that the last reimage is not detectable
@@ -122,5 +122,5 @@ class Game:
             ncd = sum(server['control'] == Party.Defender and server['status'] == -1 for server in self.servers)
             nd = sum(server['status'] > -1 for server in self.servers)
 
-            attacker.update_utility(self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]) + self.ca)
+            attacker.update_utility(self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]) + self.last_attack_cost)
             defender.update_utility(self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3]))
