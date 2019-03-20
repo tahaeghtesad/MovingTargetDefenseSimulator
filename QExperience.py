@@ -36,6 +36,12 @@ class QExperience(Experience):
     def decode(self, state: tuple) -> list:
         raise NotImplementedError
 
+    def retrieve_model(self):
+        return self.model
+
+    def load_model(self, model):
+        self.model = model
+
     def train_model(self, size=1):
         if len(self.exp) == 0:
             return

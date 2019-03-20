@@ -30,6 +30,7 @@ whole_exp = AttackerQExperience('attacker-total', m=number_of_servers)
 
 def train(i):
     attack_exp = AttackerQExperience('attacker', m=number_of_servers)
+    attack_exp.load_model(whole_exp.retrieve_model())
     game = Game(utenv=1, setting=1, m=number_of_servers, ca=0)
     attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=1 / math.sqrt(i + 1))
     defender = UniformDefender(m=number_of_servers, p=14)
