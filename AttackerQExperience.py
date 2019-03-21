@@ -7,7 +7,7 @@ import numpy as np
 
 class AttackerQExperience(QExperience):
 
-    def __init__(self, name, delta=7, max_probes=16, m=10, lr=.3, dr=.7, max_memory_size=1000):
+    def __init__(self, name, delta=7, max_probes=16, m=10, lr=.1, dr=.9, max_memory_size=1000):
         super().__init__(name, m, lr, dr, max_memory_size)
         self.delta = delta
         self.max_probes = max_probes
@@ -54,8 +54,8 @@ class AttackerQExperience(QExperience):
                 for k in range(self.m + 1):
                     x.append(i)
                     y.append(j)
-                    z.append(self.model[i, j][1])
-                    c.append(1)
+                    z.append(self.model[i, j][k])
+                    c.append(k)
 
         ax.scatter(x, y, z, c=c, cmap=plt.hot())
         plt.show()

@@ -7,6 +7,7 @@ from AttackerQExperience import AttackerQExperience
 from Defenders import *
 from Game import Game
 import copy
+import sys
 
 rootLogger = logging.getLogger()
 
@@ -47,9 +48,12 @@ def train(i):
 
 
 def main():
-    pool = Pool(cpu_count())
+    processes = int(sys.argv[1]) if len(sys.argv) > 1 else cpu_count()
+    pool = Pool(processes)
     for i in tqdm(range(episodes)):
-        exps = pool.map(train, [i] * cpu_count())
+        # if i % 100 == 0:
+        #     whole_exp.plot()
+        exps = pool.map(train, [i] * processes)
         for exp in exps:
             whole_exp.store_exp(exp)
             whole_exp.train_model(1000)

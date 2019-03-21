@@ -8,7 +8,7 @@ import h5py
 
 
 class QExperience(Experience):
-    def __init__(self, name, m=10, lr=.3, dr=.7, max_memory_size=1000):
+    def __init__(self, name, m, lr, dr, max_memory_size):
         super().__init__(name, dr, max_memory_size)
         self.lr = lr
         self.m = m
@@ -49,8 +49,11 @@ class QExperience(Experience):
         for i in self.exp[-size:]:
             last_state, last_action, last_reward, state, time = i
 
-            q_sa = np.max(self.model[self.code(state)])
-            q = (1 - self.lr) * self.model[self.code(last_state)][last_action] + \
-                self.lr * (last_reward + self.dr * q_sa)
+            if self.model[self.code(last_state)][last_action] == 0.:
+                q = last_reward
+            else:
+                q_sa = np.max(self.model[self.code(state)])
+                q = (1 - self.lr) * self.model[self.code(last_state)][last_action] + \
+                    self.lr * (last_reward + self.dr * q_sa)
 
             self.model[self.code(last_state)][last_action] = q
