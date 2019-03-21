@@ -53,6 +53,8 @@ class BaseAttacker(Player):
             self.logger.debug('Probe was successful.')
         elif success == 0:
             self.servers[action]['progress'] += 1
+            self.servers[action]['control'] = 0
+            self.servers[action]['status'] = -1
             self.logger.debug('Probe was unsuccessful.')
         elif success == -1:
             self.servers[action]['status'] = self.servers[action]['status'] if self.servers[action]['status'] != -1 else time

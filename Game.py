@@ -45,7 +45,7 @@ class Game:
 
         if server == -1:
             self.last_attack_cost = 0
-            return False
+            return 0
 
         self.last_attack_cost = -self.ca
 
@@ -55,6 +55,9 @@ class Game:
                 self.last_probe = server
             else:
                 self.last_probe = -1
+
+            if self.servers[server]['control'] == Party.Attacker:
+                return 1  # Attacker already had that server
 
             if random.random() < (1 - math.exp(
                     -self.alpha * (self.servers[server]['progress'] + 1))):  # 1 - e^-alpha*(rho + 1)
