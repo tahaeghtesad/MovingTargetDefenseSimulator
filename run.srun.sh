@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -J MTD
-#SBATCH -t 6:00:00
+#SBATCH -t 12:00:00
 #SBATCH -N 1 -n 4
 #SBATCH -p volta
 #SBATCH --gres=gpu:1
@@ -14,12 +14,4 @@ module load cuDNN/7.5.0-CUDA-10.0.130
 
 cd MovingTargetDefenceSimulator
 
-#python -m virtualenv venv
-
-#source venv/bin/activate
-#pip install --user tqdm tensorflow-gpu==1.12.1 keras
-
-python Trainer.py
-
-#deactivate
-#rm -rf venv
+python SingleTrainer.py
