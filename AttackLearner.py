@@ -31,6 +31,9 @@ class AttackLearner(BaseAttacker):
             progress = server['progress']
             control = server['control']
 
+            if (up and time_to_up != 0) or (not up and (progress != 0 or control == 1)) or (time_to_up > 0 and progress > 0):
+                raise Exception('WTF is this state?', server)
+
             new_state.append(
                 [up, time_to_up, progress, control]
             )
@@ -47,8 +50,8 @@ class AttackLearner(BaseAttacker):
 
         self.experience.record_action(action)
 
-        # if self.train:
-        #     self.experience.train_model()
+        if self.train:
+            self.experience.train_model()
 
         return action - 1
 

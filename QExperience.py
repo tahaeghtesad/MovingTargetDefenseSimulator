@@ -17,9 +17,6 @@ class QExperience(Experience):
     def predict(self, state):
         return np.argmax(self.model[self.code(state)])
 
-    def record_state(self, state):
-        super().record_state(state)
-
     def create_model(self, name, m):
         if os.path.isfile(f'{name}-weights.h5'):
             logging.info('Loading weight files.')

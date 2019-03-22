@@ -47,5 +47,5 @@ class Experience:
     def predict(self, state):
         raise NotImplementedError
 
-    def train_model(self):
+    def train_model(self, size):
         raise NotImplementedError
