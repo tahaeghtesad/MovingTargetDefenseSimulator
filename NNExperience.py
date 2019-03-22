@@ -40,7 +40,7 @@ class NNExperience(Experience):
         trainings = self.model.predict(np.array(states))
         q_sas = self.model.predict(np.array(next_states))
 
-        for i in range(size):
+        for i in range(len(samples)):
             q_sa = np.max(q_sas[i])
             trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
 
