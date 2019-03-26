@@ -3,6 +3,7 @@ from tqdm import tqdm
 from AttackLearner import AttackLearner
 from AttackerNNExperience import AttackerNNExperience
 from Defenders import *
+from Attackers import *
 from Game import Game
 
 rootLogger = logging.getLogger()
@@ -19,17 +20,17 @@ rootLogger.addHandler(fileHandler)
 
 rootLogger.setLevel(logging.INFO)
 
-number_of_servers = 3
-episodes = 10000
-rounds = 100000
+number_of_servers = 4
+episodes = 30
+steps = 30000
 
-attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=rounds)
+attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
 
 
 def train(i):
-    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=rounds)
-    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=1/math.sqrt(i + 1))
-    defender = UniformDefender(m=number_of_servers, p=10)
+    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps)
+    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=(episodes-i)/episodes)
+    defender = UniformDefender(m=number_of_servers, p=6)
 
     # attacker = MaxProbeAttacker(m=number_of_servers)
     # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
@@ -38,7 +39,7 @@ def train(i):
 
     attacker.finalize(i != 0 and i % 10 == 0)
     defender.finalize(i != 0 and i % 10 == 0)
-    rootLogger.info(f'Game {i + 1}/{episodes}: Attacker/Defender:{int(attacker.utility)}/{int(defender.utility)}')
+    rootLogger.info(f'Game {i + 1}/{episodes}: Attacker/Defender:{attacker.utility/steps:4f}/{defender.utility/steps:.4f}')
 
 
 def main():
