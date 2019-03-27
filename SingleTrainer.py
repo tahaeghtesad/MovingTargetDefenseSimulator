@@ -20,26 +20,28 @@ rootLogger.addHandler(fileHandler)
 
 rootLogger.setLevel(logging.INFO)
 
-number_of_servers = 4
-episodes = 30
-steps = 30000
+number_of_servers = 10
+episodes = 5000000
+steps = 40000
 
 attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
 
 
 def train(i):
-    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps)
-    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=(episodes-i)/episodes)
-    defender = UniformDefender(m=number_of_servers, p=6)
+    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=0)
+    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=0.5) #, train=False) #(episodes-i)/episodes)
+    defender = UniformDefender(m=number_of_servers, p=4)
 
-    # attacker = MaxProbeAttacker(m=number_of_servers)
+    # attacker = BaseAttacker(m=number_of_servers)
+
+    #attacker = MaxProbeAttacker(m=number_of_servers)
     # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
 
     game.play(attacker, defender)
 
-    attacker.finalize(i != 0 and i % 10 == 0)
-    defender.finalize(i != 0 and i % 10 == 0)
-    rootLogger.info(f'Game {i + 1}/{episodes}: Attacker/Defender:{attacker.utility/steps:4f}/{defender.utility/steps:.4f}')
+    attacker.finalize(True)
+    defender.finalize(True)
+    rootLogger.info(f'Game {i + 1}/{episodes}: Attacker/Defender:{attacker.utility/steps:.4f}/{defender.utility/steps:.4f}')
 
 
 def main():
