@@ -28,8 +28,8 @@ attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_si
 
 
 def train(i):
-    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=0)
-    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=0.5) #, train=False) #(episodes-i)/episodes)
+    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
+    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=0.1) #(episodes-i)/episodes)
     defender = UniformDefender(m=number_of_servers, p=4)
 
     # attacker = BaseAttacker(m=number_of_servers)

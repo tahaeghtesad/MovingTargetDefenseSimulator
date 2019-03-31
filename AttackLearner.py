@@ -42,7 +42,8 @@ class AttackLearner(BaseAttacker):
 
         if self.train:
             if np.random.rand() < self.epsilon:
-                action = np.random.randint(0, self.m + 1)
+                # action = np.random.randint(0, self.m + 1)
+                action = self.experience.predict_heuristic(new_state)
             else:
                 action = self.experience.predict(new_state)
         else:
