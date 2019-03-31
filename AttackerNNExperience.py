@@ -28,9 +28,13 @@ class AttackerNNExperience(NNExperience):
         model.add(Dense(m + 1, activation='softmax'))
         model.compile('adam', 'mse')
 
-        if os.path.isfile('attacker-weights-256-128-working.h5'):
-            logging.info('Loading ehuristic weight files.')
-            model.load_weights('attacker-weights-256-128-working.h5')
+        heuristic_file_name = 'attacker-weights-256-128-working.h5'
+
+        if os.path.isfile(heuristic_file_name):
+            logging.info('Loading heuristic weight files: %s' % heuristic_file_name)
+            model.load_weights(heuristic_file_name)
+        else:
+            raise Exception('No heuristic file, found %s' % heuristic_file_name)
 
         return model
 
