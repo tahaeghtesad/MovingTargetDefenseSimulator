@@ -43,7 +43,21 @@ class AttackLearner(BaseAttacker):
         if self.train:
             if np.random.rand() < self.epsilon:
                 # action = np.random.randint(0, self.m + 1)
-                action = self.experience.predict_heuristic(new_state)
+                # action = self.experience.predict_heuristic(new_state)
+                if np.random.rand() < .1:
+                    action = np.random.randint(0, self.m + 1)
+                else:
+                    max = -1
+                    index = -1
+
+                    for i in range(self.m):
+                        if self.servers[i]['control'] == 0 and self.servers[i]['status'] == -1:
+                            if self.servers[i]['progress'] > max:
+                                index = i
+                                max = self.servers[i]['progress']
+
+                    action = index + 1
+
             else:
                 action = self.experience.predict(new_state)
         else:
