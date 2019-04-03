@@ -55,6 +55,9 @@ class MovingTargetDefenceEnv(gym.Env):
         self.action_space = Discrete(m + 1)
         self.observation_space = MultiDiscrete([2, 7, 32, 2] * m) ## for attacker
 
+        self.attacker_total_reward = 0
+        self.defender_total_reward = 0
+
 
     @staticmethod
     def sigmoid(x, tth, tsl=5):
@@ -213,6 +216,10 @@ class MovingTargetDefenceEnv(gym.Env):
 
         self.logger.debug(f'Received {au} utility.')
         done = self.time == self.time_limit
+        self.attacker_total_reward += au
+        self.defender_total_reward += du
+        if done:
+            self.logger.info(f'Attacker/Defender: {self.attacker_total_reward/self.time_limit:.4}/{self.defender_total_reward/self.time_limit:.4}')
 
         #observation, reward, done, info
         return self.get_attacker_state().flatten(), au, done, {}
@@ -232,6 +239,9 @@ class MovingTargetDefenceEnv(gym.Env):
 
         self.time = 0
         self.epoch = 0
+
+        self.attacker_total_reward = 0
+        self.defender_total_reward = 0
 
         self.defender = UniformDefender(4, self.m, self.downtime)
 
