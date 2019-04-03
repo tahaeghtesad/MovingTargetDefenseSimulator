@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH -J MTD
-#SBATCH -t 12:00:00
-#SBATCH -N 1 -n 4
-#SBATCH -p volta
+#SBATCH -t 48:00:00
+#SBATCH -N 1 -n 16
+#SBATCH -p gpu
 #SBATCH --gres=gpu:1
 
 #SBATCH -A laszka
@@ -14,4 +14,4 @@ module load cuDNN/7.5.0-CUDA-10.0.130
 
 cd MovingTargetDefenceSimulator
 
-python SingleTrainer.py
+python Play.py
