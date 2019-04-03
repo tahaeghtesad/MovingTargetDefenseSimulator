@@ -5,6 +5,7 @@ from enum import Enum
 import math
 import random
 import numpy as np
+import time
 from Defenders import UniformDefender
 
 
@@ -103,6 +104,7 @@ class MovingTargetDefenceEnv(gym.Env):
             raise Exception('Chosen server is not in range', server)
 
         if server == -1:
+            self.last_reimage = -1
             return
 
         if self.servers[server]['status'] != -1:
@@ -122,7 +124,9 @@ class MovingTargetDefenceEnv(gym.Env):
     def update_attacker_state(self, action, success):
         ### updating state
 
-        for s in self.servers:
+        self.logger.debug(f'Selecting server {action} to probe.')
+
+        for s in self.attacker_servers:
             if s['status'] != -1:
                 if s['status'] + self.downtime <= self.time:
                     s['status'] = -1
@@ -131,29 +135,30 @@ class MovingTargetDefenceEnv(gym.Env):
             raise Exception('Out of range server.')
 
         if self.last_reimage != -1:
-            self.servers[self.last_reimage] = {
+            self.attacker_servers[self.last_reimage] = {
                 'status': self.time,
                 'control': 0,
                 'progress': 0
             }
 
         if action == -1:
+            self.logger.debug('Choosing no server to probe.')
             return
 
         if success == 1:
-            self.servers[action]['control'] = 1
-            self.servers[action]['progress'] += 1
-            self.servers[action]['status'] = -1
+            self.attacker_servers[action]['control'] = 1
+            self.attacker_servers[action]['progress'] += 1
+            self.attacker_servers[action]['status'] = -1
             self.logger.debug('Probe was successful.')
         elif success == 0:
-            self.servers[action]['progress'] += 1
-            self.servers[action]['control'] = 0
-            self.servers[action]['status'] = -1
+            self.attacker_servers[action]['progress'] += 1
+            self.attacker_servers[action]['control'] = 0
+            self.attacker_servers[action]['status'] = -1
             self.logger.debug('Probe was unsuccessful.')
         elif success == -1:
-            self.servers[action]['status'] = self.servers[action]['status'] if self.servers[action]['status'] != -1 else self.time
-            self.servers[action]['progress'] = 0
-            self.servers[action]['control'] = 0
+            self.attacker_servers[action]['status'] = self.attacker_servers[action]['status'] if self.attacker_servers[action]['status'] != -1 else self.time
+            self.attacker_servers[action]['progress'] = 0
+            self.attacker_servers[action]['control'] = 0
             self.logger.debug('Server was down.')
 
     def get_attacker_state(self):
@@ -204,10 +209,13 @@ class MovingTargetDefenceEnv(gym.Env):
 
         self.defender.update_utility(du)
 
+        self.time += 1
+
+        self.logger.debug(f'Received {au} utility.')
+        done = self.time == self.time_limit
 
         #observation, reward, done, info
-        return self.get_attacker_state().flatten(), au, self.time == self.time_limit, {}
-
+        return self.get_attacker_state().flatten(), au, done, {}
 
     def reset(self):
         self.servers = []
@@ -238,4 +246,7 @@ class MovingTargetDefenceEnv(gym.Env):
         return self.get_attacker_state()
 
     def render(self, mode='human'):
-        pass
+        self.logger.warning(f'LastProbe/LastReimage: {self.last_probe}/{self.last_reimage}')
+        self.logger.warning(f'Server States: {self.servers}')
+        self.logger.warning(f'Attacker View: {self.get_attacker_state()}')
+        time.sleep(5)
