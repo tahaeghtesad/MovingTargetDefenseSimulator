@@ -3,12 +3,10 @@ from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
 
 from AttackLearner import AttackLearner
-from AttackerQExperience import AttackerQExperience
 from AttackerNNExperience import AttackerNNExperience
 from Defenders import *
 from Attackers import *
-from Game import Game
-import copy
+from gym_mtd.envs.Game import Game
 import itertools
 import sys
 
