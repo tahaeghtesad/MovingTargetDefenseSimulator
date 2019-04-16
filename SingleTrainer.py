@@ -1,7 +1,9 @@
 from tqdm import tqdm
 
 from AttackLearner import AttackLearner
+from DefenseLearner import DefenseLearner
 from AttackerNNExperience import AttackerNNExperience
+from DefenderNNExperience import DefenderNNExperience
 from Defenders import *
 from Attackers import *
 from Game import Game
@@ -21,48 +23,45 @@ rootLogger.addHandler(fileHandler)
 rootLogger.setLevel(logging.INFO)
 
 number_of_servers = 10
-episodes = 1000
-steps = 40000
+episodes = 10
+steps = 4000
 
 attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
-
-attacker_util = 0
-defender_util = 0
+defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_size=steps)
 
 
 def train(i):
-    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
-    attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=.99) #(episodes-i)/episodes)
-    defender = UniformDefender(m=number_of_servers, p=4)
+    game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
+    # attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=.01) #(episodes-i)/episodes)
+    # defender = UniformDefender(m=number_of_servers, p=4)
 
     # attacker = BaseAttacker(m=number_of_servers)
 
-    # attacker = MaxProbeAttacker(m=number_of_servers)
-    # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
+    attacker = MaxProbeAttacker(m=number_of_servers)
+    defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=1) #(episodes-i)/episodes)
+
+    # defender = BaseDefender()
 
     game.play(attacker, defender)
 
     attacker.finalize(True)
     defender.finalize(True)
 
-
-    evaluate_attacker(AttackLearner(attack_exp, m=number_of_servers, train=False))
-    evaluate_attacker(BaseAttacker())
-    evaluate_attacker(MaxProbeAttacker())
+    rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender: {attacker.utility/steps:.4f}/{defender.utility/steps:.4f}')
 
 
 
-def evaluate_attacker(attacker):
+def evaluate_attacker(attackerT):
     au = 0
     du = 0
-    for i in range(100):
-        game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=150, ca=.2)
-        # attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=.80, train=False)  # (episodes-i)/episodes)
+
+    episodes = 100
+    steps = 150
+
+    for i in range(episodes):
+        game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
+        attacker = AttackLearner(attack_exp, m=number_of_servers, train=False) if attackerT == AttackLearner else attackerT()
         defender = UniformDefender(m=number_of_servers, p=4)
-
-        # attacker = BaseAttacker(m=number_of_servers)
-
-        # attacker = MaxProbeAttacker(m=number_of_servers)
         # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
 
         game.play(attacker, defender)
@@ -70,13 +69,41 @@ def evaluate_attacker(attacker):
         au += attacker.utility
         du += defender.utility
 
-    rootLogger.info(f'{attacker.__class__.__name__}/Defender: {au/100}/{du/100}')
+    rootLogger.info(f'{attackerT.__name__}/Defender: {au/steps/episodes}/{du/steps/episodes}')
+
+def evaluate_defender(defenderT):
+    au = 0
+    du = 0
+
+    episodes = 100
+    steps = 150
+
+    for i in range(episodes):
+        game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
+        attacker = MaxProbeAttacker()
+        defender = DefenseLearner(defender_exp, m=number_of_servers, train=False) if defenderT == DefenseLearner else defenderT()
+        # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
+
+        game.play(attacker, defender)
+
+        au += attacker.utility
+        du += defender.utility
+
+    rootLogger.info(f'Attacker/{defenderT.__name__}: {au/steps/episodes}/{du/steps/episodes}')
 
 
 
 def main():
     for i in tqdm(range(episodes)):
         train(i)
+
+    # evaluate_attacker(AttackLearner)
+    # evaluate_attacker(BaseAttacker)
+    # evaluate_attacker(MaxProbeAttacker)
+
+    evaluate_defender(DefenseLearner)
+    evaluate_defender(BaseDefender)
+    evaluate_defender(UniformDefender)
 
 
 if __name__ == '__main__':

@@ -1,19 +1,21 @@
 import math
 import random
+import time
 from tqdm import tqdm
 
 
 def sigmoid(x):
-    return 1. / (1. + math.exp(-0.05 * x))
+    return (1 - math.exp(
+        -0.05 * (x + 1)))
 
 
 min = 2**64
 max = 0
-sum = 0
+ssum = 0
 
 dist = [0] * 32
 
-turns = 10000000
+turns = 100000
 
 for i in tqdm(range(turns)):
     j = 0
@@ -23,10 +25,14 @@ for i in tqdm(range(turns)):
                 max = j
             if j < min:
                 min = j
-            sum += j
+            ssum += j
             dist[j] += 1
             break
         j += 1
-
-print(f'Min/Max/Avg:{min}/{max}/{sum/turns}')
+time.sleep(.1)
+print(f'Min/Max/Avg:{min}/{max}/{ssum / turns}')
 print(f'Dist: {[d/turns for d in dist]}')
+
+cdf = [sum(dist[:i+1]) for i in range(32)]
+
+print(f'CDF: {[i/turns for i in cdf]}')

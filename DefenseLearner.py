@@ -3,11 +3,12 @@ from keras.layers import Flatten, Dense
 from keras.backend import tensorflow_backend
 
 from BaseDefender import BaseDefender
-from NNExperience import NNExperience
+from Experience import Experience
 
 import tensorflow as tf
 import numpy as np
 
+import random
 import os
 import math
 import logging
@@ -15,13 +16,12 @@ import logging
 
 class DefenseLearner(BaseDefender):
 
-    def __init__(self, model: Sequential = None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
+    def __init__(self, experience: Experience = None, epsilon=.01, alpha=.05, m=10, downtime=7, train=True):
         super().__init__(m, downtime)
         self.alpha = alpha
         self.epsilon = epsilon
-        self.model = model if model is not None else DefenseLearner.create_neural_model(m)
         self.train = train
-        self.experience = NNExperience(self.model)
+        self.experience = experience
         self.logger = logging.getLogger(__name__)
 
     def update_utility(self, u):
@@ -53,12 +53,11 @@ class DefenseLearner(BaseDefender):
 
         self.experience.record_action(action)
 
-        if self.train and time % 128 == 0:
-            self.logger.debug('Training...')
+        if self.train:
             self.experience.train_model()
 
         return action - 1
 
     def finalize(self, f):
         if f and self.train:
-            self.model.save_weights('defender-weights.h5')
+            self.experience.store()
