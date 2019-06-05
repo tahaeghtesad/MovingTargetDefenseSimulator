@@ -23,8 +23,8 @@ rootLogger.addHandler(fileHandler)
 rootLogger.setLevel(logging.INFO)
 
 number_of_servers = 10
-episodes = 10
-steps = 4000
+episodes = 100
+steps = 1000
 
 attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
 defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_size=steps)

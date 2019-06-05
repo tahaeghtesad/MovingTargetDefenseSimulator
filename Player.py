@@ -16,8 +16,8 @@ class Player:
     def update_utility(self, u):
         self.logger.debug(f'Received {u} utility')
         self.last_util = u
-        self.utility = self.utility + u * self.dr ** self.timestep
-        # self.utility += u
+        # self.utility = self.utility + u * self.dr ** self.timestep
+        self.utility += u
         self.timestep += 1
 
     def finalize(self, b):

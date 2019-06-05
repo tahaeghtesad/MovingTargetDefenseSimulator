@@ -94,7 +94,7 @@ class Game:
         return 1. / (1. + math.exp(-tsl * (x - tth)))
 
     @staticmethod
-    def get_params(env, setting): # env = [1: control/avail 2: control/config 3:disrupt/avail 4:disrupt/confid] - setting = [0:low 1:major 2:high] #5: my setting!
+    def get_params(env, setting): # env = [1: control/avail 2: control/confid 3:disrupt/avail 4:disrupt/confid] - setting = [0:low 1:major 2:high] #5: my setting!
         utenv = [(1, 1), (1, 0), (0, 1), (0, 0)]
         setenv = [(.2, .2, .2, .2), (.5, .5, .5, .5), (.8, .8, .8, .8), (.2, .2, .8, .8)]
         return utenv[env], setenv[setting]
