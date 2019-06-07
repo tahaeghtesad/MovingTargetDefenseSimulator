@@ -57,6 +57,7 @@ class NNExperience(Experience):
     def train_on_samples(self, path='samples/'):
         samples = []
 
+        print('Loading samples...')
         for p in tqdm(os.listdir(path)):
             try:
                 with open(path + p) as sample:
@@ -66,13 +67,16 @@ class NNExperience(Experience):
 
         states = [c[0] for c in samples]
         next_states = [c[3] for c in samples]
+        print('Getting trainings...')
         trainings = self.model.predict(np.array(states))
+        print('Getting q_sas')
         q_sas = self.model.predict(np.array(next_states))
 
         for i in range(len(samples)):
             q_sa = np.max(q_sas[i])
             trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
 
+        print('Training NN˚')
         h = self.model.fit(np.array(states), trainings, epochs=8, verbose=1)
         self.logger.debug(f'Loss: {h.history["loss"][0]}')
         self.store()

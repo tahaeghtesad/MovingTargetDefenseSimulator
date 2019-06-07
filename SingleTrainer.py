@@ -10,6 +10,7 @@ from Game import Game
 from enum import Enum
 
 import datetime
+import multiprocessing
 
 rootLogger = logging.getLogger()
 
@@ -33,11 +34,13 @@ attacker_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_
 defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_size=steps)
 
 
-def generate_samples(i, mode):
+def generate_samples(i):
 
     # ca = i/episodes*.05
     # epsilon = (episodes-i)/episodes
     # delta = int(i/episodes*7/10*number_of_servers)
+
+    print(f'Running game {i}...')
 
     ca = 0.2
     epsilon = 1
@@ -119,8 +122,7 @@ def main():
 
     begin = datetime.datetime.now()
 
-    # for i in tqdm(range(episodes)):
-        # generate_samples(i, mode)
+    multiprocessing.Pool(int(multiprocessing.cpu_count()/2)).map(generate_samples, range(0, episodes))
 
     train()
 
