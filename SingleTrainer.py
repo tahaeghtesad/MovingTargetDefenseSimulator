@@ -26,26 +26,34 @@ rootLogger.addHandler(fileHandler)
 rootLogger.setLevel(logging.INFO)
 
 number_of_servers = 10
-episodes = 200
+episodes = 1000
 steps = 1000
 
-attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
+attacker_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
 defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_size=steps)
 
 
-def train(i, mode):
+def generate_samples(i, mode):
 
-    ca = i/episodes*.05
-    epsilon = (episodes-i)/episodes
+    # ca = i/episodes*.05
+    # epsilon = (episodes-i)/episodes
+    # delta = int(i/episodes*7/10*number_of_servers)
 
-    game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=ca)
+    ca = 0.2
+    epsilon = 1
+    delta = 7
+
+    attacker_exp.reset_exp()
+    defender_exp.reset_exp()
+
+    game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=ca, downtime=delta)
 
     if mode == Mode.Attacker:
-        attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=epsilon)
-        defender = UniformDefender(m=number_of_servers, p=4)
+        attacker = AttackLearner(attacker_exp, m=number_of_servers, epsilon=epsilon, downtime=delta)
+        defender = UniformDefender(m=number_of_servers, p=4, downtime=delta)
     else:
-        attacker = MaxProbeAttacker(m=number_of_servers)
-        defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=(episodes-i)/episodes)
+        attacker = MaxProbeAttacker(m=number_of_servers, downtime=delta)
+        defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=epsilon, downtime=delta)
 
     game.play(attacker, defender)
 
@@ -54,6 +62,9 @@ def train(i, mode):
 
     rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender: {attacker.utility/steps:.4f}/{defender.utility/steps:.4f}')
 
+
+def train():
+    attacker_exp.train_on_samples()
 
 
 def evaluate_attacker(attackerT):
@@ -64,8 +75,8 @@ def evaluate_attacker(attackerT):
     steps = 1000
 
     for i in range(episodes):
-        game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
-        attacker = AttackLearner(attack_exp, m=number_of_servers, train=False) if attackerT == AttackLearner else attackerT()
+        game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
+        attacker = AttackLearner(attacker_exp, m=number_of_servers, train=False) if attackerT == AttackLearner else attackerT(m=number_of_servers)
         defender = UniformDefender(m=number_of_servers, p=4)
 
         game.play(attacker, defender)
@@ -75,6 +86,7 @@ def evaluate_attacker(attackerT):
 
     rootLogger.info(f'{attackerT.__name__}/Defender: {au/steps/episodes:.4f}/{du/steps/episodes:.4f}')
 
+
 def evaluate_defender(defenderT):
     au = 0
     du = 0
@@ -83,9 +95,9 @@ def evaluate_defender(defenderT):
     steps = 1000
 
     for i in range(episodes):
-        game = Game(utenv=1, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
-        attacker = MaxProbeAttacker()
-        defender = DefenseLearner(defender_exp, m=number_of_servers, train=False) if defenderT == DefenseLearner else defenderT()
+        game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
+        attacker = MaxProbeAttacker(m=number_of_servers)
+        defender = DefenseLearner(defender_exp, m=number_of_servers, train=False) if defenderT == DefenseLearner else defenderT(m=number_of_servers)
 
         game.play(attacker, defender)
 
@@ -94,20 +106,23 @@ def evaluate_defender(defenderT):
 
     rootLogger.info(f'Attacker/{defenderT.__name__}: {au/steps/episodes:.4f}/{du/steps/episodes:.4f}')
 
+
 class Mode(Enum):
     Attacker = 1
     Defender = 2
 
-mode = Mode.Attacker
+
+mode = Mode.Defender
+
 
 def main():
 
     begin = datetime.datetime.now()
 
-    for i in tqdm(range(episodes)):
-        train(i, mode)
+    # for i in tqdm(range(episodes)):
+        # generate_samples(i, mode)
 
-    rootLogger.info(f'Training took {(datetime.datetime.now() - begin).total_seconds():.2f} seconds.')
+    train()
 
     if mode == Mode.Attacker:
         evaluate_attacker(AttackLearner)
@@ -118,6 +133,9 @@ def main():
         evaluate_defender(DefenseLearner)
         evaluate_defender(BaseDefender)
         evaluate_defender(UniformDefender)
+        evaluate_defender(PCPDefender)
+
+    rootLogger.info(f'Training took {(datetime.datetime.now() - begin).total_seconds():.2f} seconds.')
 
 
 if __name__ == '__main__':

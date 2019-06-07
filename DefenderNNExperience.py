@@ -10,7 +10,7 @@ from NNExperience import NNExperience
 
 
 class DefenderNNExperience(NNExperience):
-    def __init__(self, name, m=10, dr=.98, max_memory_size=128):
+    def __init__(self, name, m=10, dr=.97, max_memory_size=128):
         super().__init__(name, m, dr, max_memory_size)
         self.logger = logging.getLogger(__name__)
         self.model = self.create_model(name, m)
@@ -21,9 +21,9 @@ class DefenderNNExperience(NNExperience):
         # tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
-        model.add(Dense(256, activation='relu', input_shape=(params, 3)))
+        model.add(Dense(params * 10, activation='relu', input_shape=(params, 4)))
         model.add(Flatten())
-        model.add(Dense(128, activation='relu'))
+        model.add(Dense(params * 5, activation='relu'))
         model.add(Dense(params + 1))
         model.compile(Adam(lr=0.0001), 'mse')
 

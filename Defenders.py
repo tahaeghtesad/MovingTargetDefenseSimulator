@@ -58,6 +58,7 @@ class PCPDefender(BaseDefender):
             if self.servers[i]['progress'] >= self.pi:
                 target = i
 
+
             if 1 <= self.servers[i]['progress'] and self.last_probes[i] + self.p < time:
                 target = i
 

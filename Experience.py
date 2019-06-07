@@ -1,5 +1,5 @@
 class Experience:
-    def __init__(self, name, dr=.7, max_memory_size=128):
+    def __init__(self, name, dr=.97, max_memory_size=128):
         self.exp = []
         self.name = name
 
@@ -36,6 +36,17 @@ class Experience:
 
     def record_reward(self, reward):
         self.last_reward = reward
+
+    def reset_exp(self):
+
+        self.exp = []
+
+        self.last_state = []
+        self.last_reward = 0
+        self.last_action = 0
+
+        self.time = 0
+
 
     @staticmethod
     def create_model(name, m):

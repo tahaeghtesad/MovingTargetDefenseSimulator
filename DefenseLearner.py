@@ -47,14 +47,23 @@ class DefenseLearner(BaseDefender):
             time_since_last_reimage = time - self.last_reimage[i]
 
             new_state.append(
-                [up, time_to_up, observed_progress, time_since_last_probe, time_since_last_reimage]
+                [up, time_to_up, observed_progress, time_since_last_probe]
             )
 
         self.experience.record_state(new_state)
 
         if self.train:
             if np.random.rand() < self.epsilon:
-                action = np.random.randint(0, self.m + 1)
+                # action = np.random.randint(0, self.m + 1)
+                action = -1
+                for i in range(self.m):
+                    if self.servers[i]['progress'] >= 4:
+                        action = i
+
+                    if 1 <= self.servers[i]['progress'] and self.last_probe[i] + 7 < time:
+                        action = i
+
+                action += 1
             else:
                 action = self.experience.predict(new_state)
         else:
