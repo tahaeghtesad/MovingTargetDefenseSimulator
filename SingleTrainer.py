@@ -60,9 +60,6 @@ def generate_samples(i):
 
     game.play(attacker, defender)
 
-    attacker.finalize(True)
-    defender.finalize(True)
-
     rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender: {attacker.utility/steps:.4f}/{defender.utility/steps:.4f}')
 
 
