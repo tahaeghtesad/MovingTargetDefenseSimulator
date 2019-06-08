@@ -43,27 +43,27 @@ class DefenseLearner(BaseDefender):
             observed_progress = server['progress']
             prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))  # probability of attacker controlling that server
 
-            time_since_last_probe = time - self.last_probe[i] if self.last_probe[i] != -1 else -10  # Why -10?
+            time_since_last_probe = time - self.last_probe[i] if self.last_probe[i] != -1 else -1000000  # Why -1000000?
             time_since_last_reimage = time - self.last_reimage[i]
 
             new_state.append(
-                [up, time_to_up, observed_progress, time_since_last_probe]
+                [up, time_to_up, observed_progress, time_since_last_probe, time_since_last_reimage]
             )
 
         self.experience.record_state(new_state)
 
         if self.train:
             if np.random.rand() < self.epsilon:
-                # action = np.random.randint(0, self.m + 1)
-                action = -1
-                for i in range(self.m):
-                    if self.servers[i]['progress'] >= 4:
-                        action = i
-
-                    if 1 <= self.servers[i]['progress'] and self.last_probe[i] + 7 < time:
-                        action = i
-
-                action += 1
+                action = np.random.randint(0, self.m + 1)
+                # action = -1
+                # for i in range(self.m):
+                #     if self.servers[i]['progress'] >= 4:
+                #         action = i
+                #
+                #     if 1 <= self.servers[i]['progress'] and self.last_probe[i] + 7 < time:
+                #         action = i
+                #
+                # action += 1
             else:
                 action = self.experience.predict(new_state)
         else:
