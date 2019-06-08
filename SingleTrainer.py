@@ -44,7 +44,7 @@ def generate_samples(i):
     # print(f'Running game {i}...')
 
     ca = 0.2
-    epsilon = .97**i
+    epsilon = .975**i
     delta = 7
 
     attacker_exp.reset_exp()
@@ -60,6 +60,9 @@ def generate_samples(i):
         defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=epsilon, downtime=delta)
 
     game.play(attacker, defender)
+
+    attacker.finalize(i % 100 == 0)
+    defender.finalize(i % 100 == 0)
 
     rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender: {attacker.utility/steps:.4f}/{defender.utility/steps:.4f}')
 

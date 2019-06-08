@@ -48,8 +48,9 @@ class NNExperience(Experience):
             q_sa = np.max(q_sas[i])
             trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
 
-        h = self.model.fit(np.array(states), trainings, epochs=4, batch_size=size, verbose=1)
+        h = self.model.fit(np.array(states), trainings, epochs=16, batch_size=size, verbose=0)
         self.logger.debug(f'Loss: {h.history["loss"][0]}')
+        print(f'Loss: {h.history["loss"][0]}')
 
         # with open(f'samples/{uuid.uuid4()}.json', 'w') as sample:
         #     json.dump(samples, sample)
