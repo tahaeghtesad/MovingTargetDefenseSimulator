@@ -25,7 +25,7 @@ class AttackerNNExperience(NNExperience):
         model.add(Flatten())
         model.add(Dense(128, activation='relu'))
         model.add(Dense(params + 1))
-        model.compile(Adam(lr=0.0001), 'mse')
+        model.compile(Adam(lr=0.001), 'mse')
 
         if os.path.isfile(f'{self.name}-weights.h5'):
             logging.info('Loading weight files.')
