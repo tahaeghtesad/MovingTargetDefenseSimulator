@@ -11,7 +11,7 @@ import json
 import logging
 import uuid
 import os
-
+import multiprocessing
 
 class NNExperience(Experience):
     def __init__(self, name, m, dr, max_memory_size):
@@ -54,19 +54,24 @@ class NNExperience(Experience):
         with open(f'samples/{uuid.uuid4()}.json', 'w') as sample:
             json.dump(samples, sample)
 
-    def train_on_samples(self, path='samples/'):
-        samples = []
+    @staticmethod
+    def read(path):
+        with open('samples/' + path) as sample:
+            return json.load(sample)
+
+    def train_on_samples(self):
 
         print('Loading samples...')
-        for p in tqdm(os.listdir(path)):
-            try:
-                with open(path + p) as sample:
-                    samples += json.load(sample)
-            except:
-                print(p)
+
+        with multiprocessing.Pool(int(multiprocessing.cpu_count()/2)) as pool:
+            samples = pool.map(self.read, os.listdir('samples/'))
+
+        # Flattening list
+        samples = [item for sublist in samples for item in sublist]
 
         states = [c[0] for c in samples]
         next_states = [c[3] for c in samples]
+
         print('Getting trainings...')
         trainings = self.model.predict(np.array(states))
         print('Getting q_sas')
