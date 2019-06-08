@@ -77,6 +77,6 @@ class NNExperience(Experience):
             trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
 
         print('Training NN˚')
-        h = self.model.fit(np.array(states), trainings, epochs=8, verbose=1)
+        h = self.model.fit(np.array(states), trainings, epochs=4, verbose=1)
         self.logger.debug(f'Loss: {h.history["loss"][0]}')
         self.store()
