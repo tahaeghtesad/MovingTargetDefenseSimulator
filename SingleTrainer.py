@@ -44,7 +44,7 @@ def generate_samples(i):
     # print(f'Running game {i}...')
 
     ca = 0.2
-    epsilon = np.linspace(.9, .1, steps)[i]
+    epsilon = .97**i
     delta = 7
 
     attacker_exp.reset_exp()
@@ -155,4 +155,14 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
+        if mode == Mode.Attacker:
+            evaluate_attacker(AttackLearner)
+            evaluate_attacker(BaseAttacker)
+            evaluate_attacker(MaxProbeAttacker)
+            evaluate_attacker(UniformAttacker)
+        else:
+            evaluate_defender(DefenseLearner)
+            evaluate_defender(BaseDefender)
+            evaluate_defender(UniformDefender)
+            evaluate_defender(PCPDefender)
         exit(-1)
