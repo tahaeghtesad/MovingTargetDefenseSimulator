@@ -39,49 +39,49 @@ class NNExperience(Experience):
         # samples = random.sample(self.exp, size)
         samples = self.exp
 
-        # states = [c[0] for c in samples]
-        # next_states = [c[3] for c in samples]
-        # trainings = self.model.predict(np.array(states))
-        # q_sas = self.model.predict(np.array(next_states))
-        #
-        # for i in range(len(samples)):
-        #     q_sa = np.max(q_sas[i])
-        #     trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
-        #
-        # h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0)
-        # self.logger.debug(f'Loss: {h.history["loss"][0]}')
-
-        with open(f'samples/{uuid.uuid4()}.json', 'w') as sample:
-            json.dump(samples, sample)
-
-    @staticmethod
-    def read(path):
-        with open('samples/' + path) as sample:
-            return json.load(sample)
-
-    def train_on_samples(self):
-
-        print('Loading samples...')
-
-        with multiprocessing.Pool(int(multiprocessing.cpu_count()/2)) as pool:
-            samples = pool.map(self.read, os.listdir('samples/'))
-
-        # Flattening list
-        samples = [item for sublist in samples for item in sublist]
-
         states = [c[0] for c in samples]
         next_states = [c[3] for c in samples]
-
-        print('Getting trainings...')
         trainings = self.model.predict(np.array(states))
-        print('Getting q_sas')
         q_sas = self.model.predict(np.array(next_states))
 
         for i in range(len(samples)):
             q_sa = np.max(q_sas[i])
             trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
 
-        print('Training NN˚')
-        h = self.model.fit(np.array(states), trainings, epochs=4, verbose=1)
+        h = self.model.fit(np.array(states), trainings, epochs=4, batch_size=size, verbose=1)
         self.logger.debug(f'Loss: {h.history["loss"][0]}')
-        self.store()
+
+        # with open(f'samples/{uuid.uuid4()}.json', 'w') as sample:
+        #     json.dump(samples, sample)
+
+    # @staticmethod
+    # def read(path):
+    #     with open('samples/' + path) as sample:
+    #         return json.load(sample)
+    #
+    # def train_on_samples(self):
+    #
+    #     print('Loading samples...')
+    #
+    #     with multiprocessing.Pool(int(multiprocessing.cpu_count()/2)) as pool:
+    #         samples = pool.map(self.read, os.listdir('samples/'))
+    #
+    #     # Flattening list
+    #     samples = [item for sublist in samples for item in sublist]
+    #
+    #     states = [c[0] for c in samples]
+    #     next_states = [c[3] for c in samples]
+    #
+    #     print('Getting trainings...')
+    #     trainings = self.model.predict(np.array(states))
+    #     print('Getting q_sas')
+    #     q_sas = self.model.predict(np.array(next_states))
+    #
+    #     for i in range(len(samples)):
+    #         q_sa = np.max(q_sas[i])
+    #         trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
+    #
+    #     print('Training NN˚')
+    #     h = self.model.fit(np.array(states), trainings, epochs=4, verbose=1)
+    #     self.logger.debug(f'Loss: {h.history["loss"][0]}')
+    #     self.store()

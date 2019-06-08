@@ -11,6 +11,7 @@ from enum import Enum
 
 import datetime
 import multiprocessing
+import numpy as np
 
 rootLogger = logging.getLogger()
 
@@ -43,7 +44,7 @@ def generate_samples(i):
     # print(f'Running game {i}...')
 
     ca = 0.2
-    epsilon = 1
+    epsilon = np.linspace(.9, .1, steps)[i]
     delta = 7
 
     attacker_exp.reset_exp()
@@ -63,11 +64,11 @@ def generate_samples(i):
     rootLogger.info(f'Game {i+1}/{episodes}: Attacker/Defender: {attacker.utility/steps:.4f}/{defender.utility/steps:.4f}')
 
 
-def train():
-    if mode == Mode.Attacker:
-        attacker_exp.train_on_samples()
-    else:
-        defender_exp.train_on_samples()
+# def train():
+#     if mode == Mode.Attacker:
+#         attacker_exp.train_on_samples()
+#     else:
+#         defender_exp.train_on_samples()
 
 
 def evaluate_attacker(attackerT):
@@ -126,9 +127,14 @@ def main():
 
     print('Running Simulations')
 
-    multiprocessing.Pool(int(multiprocessing.cpu_count()/2)).map(generate_samples, range(0, episodes))
+    # with multiprocessing.Pool(int(multiprocessing.cpu_count()/2)) as pool:
+    #     pool.map(generate_samples, range(0, episodes))
 
-    train()
+    # train()
+
+    for i in tqdm(range(episodes)):
+        generate_samples(i)
+
 
     if mode == Mode.Attacker:
         evaluate_attacker(AttackLearner)
