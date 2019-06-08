@@ -27,7 +27,7 @@ rootLogger.addHandler(fileHandler)
 rootLogger.setLevel(logging.INFO)
 
 number_of_servers = 10
-episodes = 1000
+episodes = 10000
 steps = 1000
 
 attacker_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
@@ -40,7 +40,7 @@ def generate_samples(i):
     # epsilon = (episodes-i)/episodes
     # delta = int(i/episodes*7/10*number_of_servers)
 
-    print(f'Running game {i}...')
+    # print(f'Running game {i}...')
 
     ca = 0.2
     epsilon = 1
@@ -88,6 +88,7 @@ def evaluate_attacker(attackerT):
         du += defender.utility
 
     rootLogger.info(f'{attackerT.__name__}/Defender: {au/steps/episodes:.4f}/{du/steps/episodes:.4f}')
+    print(f'{attackerT.__name__}/Defender: {au/steps/episodes:.4f}/{du/steps/episodes:.4f}')
 
 
 def evaluate_defender(defenderT):
@@ -108,6 +109,7 @@ def evaluate_defender(defenderT):
         du += defender.utility
 
     rootLogger.info(f'Attacker/{defenderT.__name__}: {au/steps/episodes:.4f}/{du/steps/episodes:.4f}')
+    print(f'Attacker/{defenderT.__name__}: {au/steps/episodes:.4f}/{du/steps/episodes:.4f}')
 
 
 class Mode(Enum):
@@ -121,6 +123,8 @@ mode = Mode.Defender
 def main():
 
     begin = datetime.datetime.now()
+
+    print('Running Simulations')
 
     multiprocessing.Pool(int(multiprocessing.cpu_count()/2)).map(generate_samples, range(0, episodes))
 
@@ -138,6 +142,7 @@ def main():
         evaluate_defender(PCPDefender)
 
     rootLogger.info(f'Training took {(datetime.datetime.now() - begin).total_seconds():.2f} seconds.')
+    print(f'Training took {(datetime.datetime.now() - begin).total_seconds():.2f} seconds.')
 
 
 if __name__ == '__main__':
