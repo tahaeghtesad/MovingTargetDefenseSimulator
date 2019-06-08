@@ -64,7 +64,10 @@ def generate_samples(i):
 
 
 def train():
-    attacker_exp.train_on_samples()
+    if mode == Mode.Attacker:
+        attacker_exp.train_on_samples()
+    else:
+        defender_exp.train_on_samples()
 
 
 def evaluate_attacker(attackerT):
