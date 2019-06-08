@@ -22,7 +22,7 @@ class AttackerNNExperience(NNExperience):
 
         model = Sequential()
         model.add(Dense(32, activation='relu', input_shape=(params, 4)))
-        # model.add(Flatten())
+        model.add(Flatten())
         model.add(Dense(16, activation='relu'))
         model.add(Dense(params + 1))
         model.compile(Adam(lr=0.0001), 'mse')
