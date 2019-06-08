@@ -21,9 +21,9 @@ class DefenderNNExperience(NNExperience):
         # tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
-        model.add(Dense(params * 10, activation='relu', input_shape=(params, 4)))
+        model.add(Dense(256, activation='relu', input_shape=(params, 5)))
         model.add(Flatten())
-        model.add(Dense(params * 5, activation='relu'))
+        model.add(Dense(128, activation='relu'))
         model.add(Dense(params + 1))
         model.compile(Adam(lr=0.0001), 'mse')
 
