@@ -54,16 +54,18 @@ class DefenseLearner(BaseDefender):
 
         if self.train:
             if np.random.rand() < self.epsilon:
-                action = np.random.randint(0, self.m + 1)
-                # action = -1
-                # for i in range(self.m):
-                #     if self.servers[i]['progress'] >= 4:
-                #         action = i
-                #
-                #     if 1 <= self.servers[i]['progress'] and self.last_probe[i] + 7 < time:
-                #         action = i
-                #
-                # action += 1
+                if np.random.rand() < .1:
+                    action = np.random.randint(0, self.m + 1)
+                else:
+                    action = -1
+                    for i in range(self.m):
+                        if self.servers[i]['progress'] >= 4:
+                            action = i
+
+                        if 1 <= self.servers[i]['progress'] and self.last_probe[i] + 7 < time:
+                            action = i
+
+                    action += 1
             else:
                 action = self.experience.predict(new_state)
         else:
