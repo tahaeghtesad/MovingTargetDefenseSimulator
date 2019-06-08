@@ -10,7 +10,7 @@ from NNExperience import NNExperience
 
 
 class AttackerNNExperience(NNExperience):
-    def __init__(self, name, m=10, dr=.97, max_memory_size=128):
+    def __init__(self, name, m=10, dr=.93, max_memory_size=128):
         super().__init__(name, m, dr, max_memory_size)
         self.logger = logging.getLogger(__name__)
         self.model = self.create_model(name, m)

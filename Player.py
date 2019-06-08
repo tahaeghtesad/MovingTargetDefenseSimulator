@@ -2,7 +2,7 @@ import logging
 
 
 class Player:
-    def __init__(self, dr=.97):
+    def __init__(self, dr=.93):
         self.logger = logging.getLogger(Player.__name__)
         self.utility = 0
         self.last_util = 0
