@@ -100,7 +100,7 @@ class Game:
         return utenv[env], setenv[setting]
 
     def utility(self, nc, nd, w, tth_1, tth_2):
-        return w * Game.sigmoid(nc / self.m, tth_1) + (1 - w) * Game.sigmoid((nc + nd) / self.m, tth_2)
+        return 100 * w * Game.sigmoid(nc / self.m, tth_1) + (1 - w) * Game.sigmoid((nc + nd) / self.m, tth_2)
 
     def play(self, attacker: BaseAttacker, defender: BaseDefender):
         for self.time in range(self.time_limit):

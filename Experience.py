@@ -1,5 +1,5 @@
 class Experience:
-    def __init__(self, name, dr=.93, max_memory_size=128):
+    def __init__(self, name, dr=.98, max_memory_size=128):
         self.exp = []
         self.name = name
 
