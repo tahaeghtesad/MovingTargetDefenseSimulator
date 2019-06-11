@@ -1,9 +1,6 @@
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Conv3D, BatchNormalization
 from keras.backend import tensorflow_backend
-from livelossplot.keras import PlotLossesCallback
-
-# from keras.callbacks import TensorBoard
 
 from Experience import Experience
 import numpy as np
