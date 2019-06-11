@@ -1,6 +1,9 @@
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Conv3D, BatchNormalization
 from keras.backend import tensorflow_backend
+from livelossplot.keras import PlotLossesCallback
+
+# from keras.callbacks import TensorBoard
 
 from Experience import Experience
 import numpy as np
@@ -47,5 +50,5 @@ class NNExperience(Experience):
             q_sa = np.max(q_sas[i])
             trainings[i][actions[i]] = rewards[i] + self.dr * q_sa
 
-        h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0)
+        h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0, callbacks=[])
         self.logger.debug(f'Loss: {h.history["loss"][0]}')

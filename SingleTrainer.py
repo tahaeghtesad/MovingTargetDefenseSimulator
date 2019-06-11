@@ -40,9 +40,10 @@ def train(i):
     # attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=(episodes-i)/episodes)
     # defender = UniformDefender(m=number_of_servers, p=4)
 
-    attacker = BaseAttacker(m=number_of_servers)
+    # attacker = BaseAttacker(m=number_of_servers)
 
     # attacker = MaxProbeAttacker(m=number_of_servers)
+    attacker = UniformAttacker(m=number_of_servers)
     defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=epsilon) # The quick brown fox jumps over a lazy dog
 
     # defender = BaseDefender()
@@ -85,7 +86,7 @@ def evaluate_defender(defenderT):
 
     for i in range(episodes):
         game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
-        attacker = BaseAttacker()
+        attacker = UniformAttacker()
         defender = DefenseLearner(defender_exp, m=number_of_servers, train=False) if defenderT == DefenseLearner else defenderT()
         # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
 
@@ -106,6 +107,7 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+        # pass
     except KeyboardInterrupt:
         pass
     finally:
