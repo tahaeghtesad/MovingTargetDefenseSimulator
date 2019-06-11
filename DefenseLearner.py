@@ -38,14 +38,14 @@ class DefenseLearner(BaseDefender):
         new_state = []
         for i, server in enumerate(self.servers):
             up = int(server['status'] == -1)
-            # time_to_up = 0 if up else server['status'] + self.downtime - time
+            time_to_up = 0 if up else server['status'] + self.downtime - time
             observed_progress = server['progress']
             # probability of attacker controlling that server # It's not this!
             # prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))
             time_since_last_probe = time - self.last_probes[i] if self.last_probes[i] != -1 else -1
 
             new_state.append(
-                [up, observed_progress, time_since_last_probe]
+                [up, time_to_up, observed_progress, time_since_last_probe]
             )
 
         self.experience.record_state(new_state)
@@ -61,7 +61,7 @@ class DefenseLearner(BaseDefender):
         self.experience.record_action(action)
 
         if self.train:
-            self.experience.train_model()
+            self.experience.train_model(32)
 
         if action != 0:
             self.last_probes[action - 1] = -1

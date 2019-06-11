@@ -7,6 +7,7 @@ from DefenderNNExperience import DefenderNNExperience
 from Defenders import *
 from Attackers import *
 from Game import Game
+import numpy as np
 
 rootLogger = logging.getLogger()
 
@@ -26,14 +27,14 @@ number_of_servers = 10
 episodes = 1000
 steps = 1000
 
-attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=steps)
-defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_size=steps)
+attack_exp = AttackerNNExperience('attacker', m=number_of_servers, max_memory_size=128)
+defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_size=128)
 
 
 def train(i):
 
-    attack_exp.erase_memory()
-    defender_exp.erase_memory()
+    epsilon = .995**i
+    # epsilon = 0
 
     game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=0.20)
     # attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=(episodes-i)/episodes)
@@ -42,7 +43,7 @@ def train(i):
     attacker = BaseAttacker(m=number_of_servers)
 
     # attacker = MaxProbeAttacker(m=number_of_servers)
-    defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=0)
+    defender = DefenseLearner(defender_exp, m=number_of_servers, epsilon=epsilon) # The quick brown fox jumps over a lazy dog
 
     # defender = BaseDefender()
 

@@ -21,10 +21,10 @@ class DefenderNNExperience(NNExperience):
         # tensorflow_backend.set_session(tf.Session(config=config))
 
         model = Sequential()
-        model.add(Dense(64, activation='sigmoid', input_shape=(params, 3)))
+        model.add(Dense(64, activation='sigmoid', input_shape=(params, 4)))
         model.add(Flatten())
-        model.add(Dense(32, activation='linear'))
-        model.add(Dense(params + 1, activation='linear'))
+        model.add(Dense(32))
+        model.add(Dense(params + 1))
         model.compile(Adam(lr=0.001), 'mae')
 
         if os.path.isfile(f'{self.name}-weights.h5'):
