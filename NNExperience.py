@@ -1,6 +1,8 @@
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Conv3D, BatchNormalization
 from keras.backend import tensorflow_backend
+from keras.callbacks import Callback
+# import matplotlib.pyplot as plt
 
 from Experience import Experience
 import numpy as np
@@ -15,6 +17,7 @@ class NNExperience(Experience):
         self.model: Sequential = None
         self.logger = logging.getLogger(__name__)
         self.m = m
+        self.lossHistory = LossHistory()
 
     def predict(self, state):
         return np.argmax(self.model.predict(np.array([state]))[0])
@@ -26,14 +29,12 @@ class NNExperience(Experience):
         self.model.save_weights(f'{self.name}-weights.h5')
 
     def train_model(self, size=16):
-        if len(self.exp) < size:
+        if len(self.exp) == 0:
             return
-
-        # if self.exp[-1][-1] != self.size - 1:
-        #     return
-
-        samples = random.sample(self.exp, size)
-        # samples = self.exp
+        elif len(self.exp) < size:
+            samples = self.exp
+        else:
+            samples = random.sample(self.exp, size)
 
         states = [c[0] for c in samples]
         next_states = [c[3] for c in samples]
@@ -47,5 +48,35 @@ class NNExperience(Experience):
             q_sa = np.max(q_sas[i])
             trainings[i][actions[i]] = rewards[i] + self.dr * q_sa
 
-        h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0, callbacks=[])
+        h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0, callbacks=[self.lossHistory])
         self.logger.debug(f'Loss: {h.history["loss"][0]}')
+
+class LossHistory(Callback):
+
+    def __init__(self):
+        super().__init__()
+        self.losses = []
+
+    def on_train_begin(self, logs=None):
+        pass
+
+    def on_batch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
+        self.losses.append(logs.get('loss'))
+
+    def report(self):
+        nparr = np.array(self.losses)
+        nparr.sort()
+        rep = {
+            'median': np.median(nparr),
+            'max': np.max(nparr),
+            'min': np.min(nparr),
+            'avg': np.mean(nparr),
+            'var': np.var(nparr),
+            'std': np.std(nparr)
+        }
+        self.losses = []
+        # plt.plot(nparr)
+        # plt.show()
+        return rep

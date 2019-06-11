@@ -71,3 +71,4 @@ class DefenseLearner(BaseDefender):
     def finalize(self, f):
         if f and self.train:
             self.experience.store()
+            self.logger.info(self.experience.lossHistory.report())

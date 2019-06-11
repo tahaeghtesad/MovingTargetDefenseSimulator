@@ -25,7 +25,7 @@ class DefenderNNExperience(NNExperience):
         model.add(Flatten())
         model.add(Dense(32))
         model.add(Dense(params + 1))
-        model.compile(Adam(lr=0.001), 'mae')
+        model.compile(Adam(lr=0.001), 'mape')
 
         if os.path.isfile(f'{self.name}-weights.h5'):
             logging.info('Loading weight files.')
