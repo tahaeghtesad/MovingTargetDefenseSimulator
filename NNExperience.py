@@ -16,6 +16,8 @@ class NNExperience(Experience):
         self.logger = logging.getLogger(__name__)
         self.m = m
 
+        self.first_time = True
+
     def predict(self, state):
         return np.argmax(self.model.predict(np.array([state]))[0])
 
@@ -29,7 +31,7 @@ class NNExperience(Experience):
         if len(self.exp) < size:
             return
 
-        if self.exp[-1][-1] % self.size != 0:
+        if self.exp[-1][-1] != self.size - 1:
             return
 
         # samples = random.sample(self.exp, size)
@@ -37,12 +39,17 @@ class NNExperience(Experience):
 
         states = [c[0] for c in samples]
         next_states = [c[3] for c in samples]
+        rewards = [c[2] for c in samples]
+        actions = [c[1] for c in samples]
+
         trainings = self.model.predict(np.array(states))
         q_sas = self.model.predict(np.array(next_states))
 
         for i in range(len(samples)):
-            q_sa = np.max(q_sas[i])
-            trainings[i][samples[i][1]] = samples[i][2] + self.dr * q_sa
+            q_sa = np.max(q_sas[i]) if not self.first_time else 0
+            trainings[i][actions[i]] = rewards[i] + self.dr * q_sa
+
+        self.first_time = False
 
         h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0)
         self.logger.debug(f'Loss: {h.history["loss"][0]}')

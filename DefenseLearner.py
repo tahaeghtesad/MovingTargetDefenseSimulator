@@ -23,22 +23,29 @@ class DefenseLearner(BaseDefender):
         self.train = train
         self.experience = experience
         self.logger = logging.getLogger(__name__)
+        self.last_probes = [-1] * m
 
     def update_utility(self, u):
         super().update_utility(u)
-        self.experience.record_reward(u)
+        assert 0 <= u <= 1
+        self.experience.record_reward(u - 1)
 
     def select_action(self, time, last_probe):
 
+        if last_probe != -1:
+            self.last_probes[last_probe] = time
+
         new_state = []
-        for server in self.servers:
+        for i, server in enumerate(self.servers):
             up = int(server['status'] == -1)
-            time_to_up = 0 if up else server['status'] + self.downtime - time
+            # time_to_up = 0 if up else server['status'] + self.downtime - time
             observed_progress = server['progress']
-            prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))  # probability of attacker controlling that server
+            # probability of attacker controlling that server # It's not this!
+            # prob = (1 - math.exp(-self.alpha * (server['progress'] + 1)))
+            time_since_last_probe = time - self.last_probes[i] if self.last_probes[i] != -1 else -1
 
             new_state.append(
-                [up, time_to_up, observed_progress]
+                [up, observed_progress, time_since_last_probe]
             )
 
         self.experience.record_state(new_state)
@@ -55,6 +62,9 @@ class DefenseLearner(BaseDefender):
 
         if self.train:
             self.experience.train_model()
+
+        if action != 0:
+            self.last_probes[action - 1] = -1
 
         return action - 1
 

@@ -37,6 +37,15 @@ class Experience:
     def record_reward(self, reward):
         self.last_reward = reward
 
+    def erase_memory(self):
+        self.exp = []
+
+        self.last_state = []
+        self.last_reward = 0
+        self.last_action = 0
+
+        self.time = 0
+
     @staticmethod
     def create_model(name, m):
         raise NotImplementedError
