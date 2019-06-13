@@ -30,7 +30,7 @@ class BaseDefender(Player):
         if not -1 <= last_probe < self.m:
             raise Exception('Out of range server.')
 
-        if last_probe != -1:
+        if last_probe != -1 and self.servers[last_probe]['status'] == -1:
             self.servers[last_probe]['progress'] += 1
 
         ### Performing
