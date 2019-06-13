@@ -2,7 +2,8 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense, Conv3D, BatchNormalization
 from keras.backend import tensorflow_backend
 from keras.callbacks import Callback
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+from scipy.special import softmax
 
 from Experience import Experience
 import numpy as np
@@ -20,7 +21,8 @@ class NNExperience(Experience):
         self.lossHistory = LossHistory()
 
     def predict(self, state):
-        return np.argmax(self.model.predict(np.array([state]))[0])
+        values = self.model.predict(np.array([state]))[0]
+        return softmax([c * 5 for c in values])
 
     def create_model(self, name, params):
         raise NotImplementedError
@@ -46,10 +48,11 @@ class NNExperience(Experience):
 
         for i in range(len(samples)):
             q_sa = np.max(q_sas[i])
-            trainings[i][actions[i]] = rewards[i] + self.dr * q_sa
+            trainings[i][actions[i]] = rewards[i] + self.dr * q_sa #if rewards[i] > -0.8 else rewards[i]
 
         h = self.model.fit(np.array(states), trainings, epochs=1, batch_size=size, verbose=0, callbacks=[self.lossHistory])
         self.logger.debug(f'Loss: {h.history["loss"][0]}')
+
 
 class LossHistory(Callback):
 
@@ -67,7 +70,7 @@ class LossHistory(Callback):
 
     def report(self):
         nparr = np.array(self.losses)
-        nparr.sort()
+        # nparr.sort()
         rep = {
             'median': np.median(nparr),
             'max': np.max(nparr),

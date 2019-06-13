@@ -27,7 +27,6 @@ class DefenseLearner(BaseDefender):
 
     def update_utility(self, u):
         super().update_utility(u)
-        assert 0 <= u <= 1
         self.experience.record_reward(u - 1)
 
     def select_action(self, time, last_probe):
@@ -45,18 +44,31 @@ class DefenseLearner(BaseDefender):
             time_since_last_probe = time - self.last_probes[i] if self.last_probes[i] != -1 else -1
 
             new_state.append(
-                [up, time_to_up, observed_progress, time_since_last_probe]
+                [up, observed_progress, time_since_last_probe]
             )
 
         self.experience.record_state(new_state)
 
         if self.train:
             if np.random.rand() < self.epsilon:
-                action = np.random.randint(0, self.m + 1)
+                # action = 0
+                # if np.random.rand() < .4:
+                    action = np.random.randint(0, self.m + 1)
+                # else:
+                #     action = -1
+                #     for i in range(self.m):
+                #         if self.servers[i]['progress'] >= 7:
+                #             action = i
+                #
+                #         if 1 <= self.servers[i]['progress'] and self.last_probes[i] + 4 < time:
+                #             action = i
+                #
+                #     action += 1
             else:
-                action = self.experience.predict(new_state)
+                action = np.random.choice(self.m + 1, 1, p=self.experience.predict(new_state))[0]
         else:
-            action = self.experience.predict(new_state)
+            action = np.random.choice(self.m + 1, 1, p=self.experience.predict(new_state))[0]
+            # action = np.argmax(self.experience.predict(new_state))
 
         self.experience.record_action(action)
 

@@ -33,8 +33,8 @@ defender_exp = DefenderNNExperience('defender', m=number_of_servers, max_memory_
 
 def train(i):
 
-    epsilon = .995**i
-    # epsilon = 0
+    # epsilon = .1
+    epsilon = 0
 
     game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=0.20)
     # attacker = AttackLearner(attack_exp, m=number_of_servers, epsilon=(episodes-i)/episodes)
@@ -86,7 +86,7 @@ def evaluate_defender(defenderT):
 
     for i in range(episodes):
         game = Game(utenv=0, setting=1, m=number_of_servers, time_limit=steps, ca=.2)
-        attacker = UniformAttacker()
+        attacker = MaxProbeAttacker()
         defender = DefenseLearner(defender_exp, m=number_of_servers, train=False) if defenderT == DefenseLearner else defenderT()
         # defender = DefendLearner(epsilon=(episodes-i)/episodes, model=defend_model)
 
@@ -96,7 +96,6 @@ def evaluate_defender(defenderT):
         du += defender.utility
 
     rootLogger.info(f'Attacker/{defenderT.__name__}: {au/steps/episodes}/{du/steps/episodes}')
-
 
 
 def main():
