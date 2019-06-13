@@ -83,6 +83,10 @@ class Game:
         else:
             self.last_reimage = -1
 
+        # Defender reimaged a server which attacker probed in last action: Don't tell defender that attacker even attacked!
+        if self.last_probe == server:
+            self.last_probe = -1
+
         self.servers[server] = {
             'control': Party.Defender,
             'status': self.time,  # -1 means that it is up, a positive number is the time of re-image
