@@ -2,7 +2,6 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense, Conv3D, BatchNormalization
 from keras.backend import tensorflow_backend
 from keras.callbacks import Callback
-import matplotlib.pyplot as plt
 from scipy.special import softmax
 
 from Experience import Experience
