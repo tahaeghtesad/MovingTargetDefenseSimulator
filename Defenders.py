@@ -2,6 +2,7 @@ from BaseDefender import BaseDefender
 import random
 import logging
 import math
+import numpy as np
 
 
 class UniformDefender(BaseDefender):
@@ -99,3 +100,36 @@ class ControlThresholdDefender(BaseDefender):
             self.last_action = time
 
         return reimage
+
+
+class AllKnowingDefender(BaseDefender):
+    def __init__(self, m=10, downtime=7):
+        super().__init__(m, downtime)
+        self.go_up = -1
+        self.prev_utility_step = self.m
+        self.utility_steps = [1./(1. + math.exp(-5 * (x - 0.5))) for x in np.linspace(0, 1, m + 1)]
+        self.last_util = self.utility_steps[self.m]
+
+    def select_action(self, time, last_probe):
+
+        for i in range(len(self.servers)):
+            if self.servers[i]['status'] != -1 and time - self.servers[i]['status'] == self.downtime - 1:
+                self.go_up = i
+
+        utility_step = self.find_step(self.last_util)
+
+        if utility_step < self.prev_utility_step:
+            action = last_probe
+        else:
+            action = -1
+
+        self.prev_utility_step = utility_step
+        if self.go_up != -1:
+            self.prev_utility_step += 1
+
+        return action
+
+    def find_step(self, u):
+        for i in range(len(self.utility_steps)):
+            if self.utility_steps[i] * .99 < u < self.utility_steps[i] * 1.01:
+                return i
