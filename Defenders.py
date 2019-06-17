@@ -2,10 +2,11 @@ from BaseDefender import BaseDefender
 import random
 import logging
 import math
+import numpy as np
 
 
 class UniformDefender(BaseDefender):
-    def __init__(self, p=1, m=10, downtime=7):
+    def __init__(self, p=4, m=10, downtime=7):
         super().__init__(m, downtime)
         self.logger = logging.getLogger('UniformDefender')
         self.p = p
@@ -22,10 +23,10 @@ class UniformDefender(BaseDefender):
 
 
 class MaxProbeDefender(BaseDefender):
-    def __init__(self, m=10, downtime=7, pi=7):
+    def __init__(self, m=10, downtime=7, p=4):
         super().__init__(m, downtime)
         self.logger = logging.getLogger('MaxProbeDefender')
-        self.pi = pi
+        self.p = p
 
     def select_action(self, time, last_probe):
         max = 0
@@ -37,11 +38,11 @@ class MaxProbeDefender(BaseDefender):
                     index = i
                     max = self.servers[i]['progress']
 
-        return index if time != 0 and time % self.pi == 0 else -1
+        return index if time != 0 and time % self.p == 0 else -1
 
 
 class PCPDefender(BaseDefender):
-    def __init__(self, pi=1, p=1, m=10, downtime=7):
+    def __init__(self, pi=7, p=4, m=10, downtime=7):
         super().__init__(m, downtime)
         self.logger = logging.getLogger('PCPDefender')
         self.pi = pi
@@ -68,17 +69,17 @@ class PCPDefender(BaseDefender):
 
 
 class ControlThresholdDefender(BaseDefender):
-    def __init__(self, t=.1, alpha=.05, m=10, downtime=7):
+    def __init__(self, t=.4, p=4, alpha=.05, m=10, downtime=7):
         super().__init__(m, downtime)
         self.logger = logging.getLogger('ControlThresholdDefender')
         self.t = t
         self.alpha = alpha
-        self.last_action = -1
+        self.last_action = 0
+        self.p = p
 
     def select_action(self, time, last_probe):
 
-        if self.last_action != -1:
-            self.last_action = -1
+        if time - self.last_action <= self.p:
             return -1
 
         targets = []
@@ -95,5 +96,40 @@ class ControlThresholdDefender(BaseDefender):
                     max = prob
                     reimage = i
 
-        self.last_action = reimage
+        if reimage != -1:
+            self.last_action = time
+
         return reimage
+
+
+class AllKnowingDefender(BaseDefender):
+    def __init__(self, m=10, downtime=7):
+        super().__init__(m, downtime)
+        self.go_up = -1
+        self.prev_utility_step = self.m
+        self.utility_steps = [1./(1. + math.exp(-5 * (x - 0.5))) for x in np.linspace(0, 1, m + 1)]
+        self.last_util = self.utility_steps[self.m]
+
+    def select_action(self, time, last_probe):
+
+        for i in range(len(self.servers)):
+            if self.servers[i]['status'] != -1 and time - self.servers[i]['status'] == self.downtime - 1:
+                self.go_up = i
+
+        utility_step = self.find_step(self.last_util)
+
+        if utility_step < self.prev_utility_step:
+            action = last_probe
+        else:
+            action = -1
+
+        self.prev_utility_step = utility_step
+        if self.go_up != -1:
+            self.prev_utility_step += 1
+
+        return action
+
+    def find_step(self, u):
+        for i in range(len(self.utility_steps)):
+            if self.utility_steps[i] * .99 < u < self.utility_steps[i] * 1.01:
+                return i

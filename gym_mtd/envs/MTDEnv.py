@@ -6,6 +6,7 @@ import math
 import random
 import numpy as np
 import time
+import copy
 from Defenders import UniformDefender
 
 
@@ -16,7 +17,8 @@ class Party(Enum):
 
 class MovingTargetDefenceEnv(gym.Env):
 
-    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2, defender=UniformDefender):
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2,
+                 defender=None):
         self.logger = logging.getLogger(__name__)
         self.servers = []
         for i in range(m):
@@ -42,7 +44,8 @@ class MovingTargetDefenceEnv(gym.Env):
         self.time = 0
         self.epoch = 0
 
-        self.defender = defender(4, m, downtime)
+        self.defender = UniformDefender(4, m, downtime) if defender is None else defender
+        self.defender_t = copy.deepcopy(defender)
 
         self.attacker_servers = []
         for i in range(m):
@@ -53,11 +56,10 @@ class MovingTargetDefenceEnv(gym.Env):
             })
 
         self.action_space = Discrete(m + 1)
-        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m) ## for attacker
+        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)  ## for attacker
 
         self.attacker_total_reward = 0
         self.defender_total_reward = 0
-
 
     @staticmethod
     def sigmoid(x, tth, tsl=5):
@@ -71,7 +73,8 @@ class MovingTargetDefenceEnv(gym.Env):
         return utenv[env], setenv[setting]
 
     def utility(self, nc, nd, w, tth_1, tth_2):
-        return w * MovingTargetDefenceEnv.sigmoid(nc / self.m, tth_1) + (1 - w) * MovingTargetDefenceEnv.sigmoid((nc + nd) / self.m, tth_2)
+        return w * MovingTargetDefenceEnv.sigmoid(nc / self.m, tth_1) + (1 - w) * MovingTargetDefenceEnv.sigmoid(
+            (nc + nd) / self.m, tth_2)
 
     def probe(self, server):
         if not -1 <= server < self.m:
@@ -104,10 +107,9 @@ class MovingTargetDefenceEnv(gym.Env):
 
     def reimage(self, server):
         if not -1 <= server < self.m:
-            raise Exception('Chosen server is not in range', server)
+            raise Exception('Chosen server is not in range')
 
         if server == -1:
-            self.last_reimage = -1
             return
 
         if self.servers[server]['status'] != -1:
@@ -118,69 +120,15 @@ class MovingTargetDefenceEnv(gym.Env):
         else:
             self.last_reimage = -1
 
+        # Defender reimaged a server which attacker probed in last action: Don't tell defender that attacker even attacked!
+        if self.last_probe == server:
+            self.last_probe = -1
+
         self.servers[server] = {
             'control': Party.Defender,
             'status': self.time,  # -1 means that it is up, a positive number is the time of re-image
             'progress': 0
         }
-
-    def update_attacker_state(self, action, success):
-        ### updating state
-
-        self.logger.debug(f'Selecting server {action} to probe.')
-
-        for s in self.attacker_servers:
-            if s['status'] != -1:
-                if s['status'] + self.downtime <= self.time:
-                    s['status'] = -1
-
-        if not -1 <= self.last_reimage < self.m:
-            raise Exception('Out of range server.')
-
-        if self.last_reimage != -1:
-            self.attacker_servers[self.last_reimage] = {
-                'status': self.time,
-                'control': 0,
-                'progress': 0
-            }
-
-        if action == -1:
-            self.logger.debug('Choosing no server to probe.')
-            return
-
-        if success == 1:
-            self.attacker_servers[action]['control'] = 1
-            self.attacker_servers[action]['progress'] += 1
-            self.attacker_servers[action]['status'] = -1
-            self.logger.debug('Probe was successful.')
-        elif success == 0:
-            self.attacker_servers[action]['progress'] += 1
-            self.attacker_servers[action]['control'] = 0
-            self.attacker_servers[action]['status'] = -1
-            self.logger.debug('Probe was unsuccessful.')
-        elif success == -1:
-            self.attacker_servers[action]['status'] = self.attacker_servers[action]['status'] if self.attacker_servers[action]['status'] != -1 else self.time
-            self.attacker_servers[action]['progress'] = 0
-            self.attacker_servers[action]['control'] = 0
-            self.logger.debug('Server was down.')
-
-    def get_attacker_state(self):
-        new_state = []
-        for server in self.attacker_servers:
-            up = int(server['status'] == -1)
-            time_to_up = 0 if up else server['status'] + self.downtime - self.time
-            progress = server['progress']
-            control = server['control']
-
-            if (up and time_to_up != 0) or (not up and (progress != 0 or control == 1)) or (
-                    time_to_up > 0 and progress > 0):
-                raise Exception('WTF is this state?', server)
-
-            new_state.append(
-                [up, time_to_up, progress, control]
-            )
-
-        return np.array(new_state).flatten()
 
     def step(self, action):
         action -= 1
@@ -198,7 +146,6 @@ class MovingTargetDefenceEnv(gym.Env):
         p_last_probe = self.last_probe
 
         success = self.probe(action)
-        self.update_attacker_state(action, success)
 
         self.defender.reimage(self.time, p_last_probe, self.reimage)
 
@@ -215,14 +162,29 @@ class MovingTargetDefenceEnv(gym.Env):
         self.time += 1
 
         self.logger.debug(f'Received {au} utility.')
-        done = self.time == self.time_limit
+        done = self.time == self.time_limit - 1
         self.attacker_total_reward += au
         self.defender_total_reward += du
         if done:
-            self.logger.info(f'Attacker/Defender: {self.attacker_total_reward/self.time_limit:.4}/{self.defender_total_reward/self.time_limit:.4}')
+            self.logger.info(
+                f'Attacker/Defender: {self.attacker_total_reward / self.time_limit:.4}/{self.defender_total_reward / self.time_limit:.4}')
 
-        #observation, reward, done, info
-        return self.get_attacker_state().flatten(), au, done, {}
+        # observation, reward, done, info
+        return {
+                   'att': {
+                       'action': action,
+                       'last_reimage': self.last_reimage,
+                       'success': success
+                   },
+                   'def': {
+                       'action': action,
+                       'last_probe': self.last_probe
+                   },
+                   'time': self.time
+               }, {
+                   'att': au,
+                   'def': du
+               }, done, {}
 
     def reset(self):
         self.servers = []
@@ -243,7 +205,7 @@ class MovingTargetDefenceEnv(gym.Env):
         self.attacker_total_reward = 0
         self.defender_total_reward = 0
 
-        self.defender = UniformDefender(4, self.m, self.downtime)
+        self.defender = copy.deepcopy(self.defender_t)
 
         self.attacker_servers = []
         for i in range(self.m):
@@ -253,10 +215,20 @@ class MovingTargetDefenceEnv(gym.Env):
                 'control': 0
             })
 
-        return self.get_attacker_state()
+        return {
+            'att': {
+                'action': -1,
+                'last_reimage': self.last_reimage,
+                'success': 0
+            },
+            'def': {
+                'action': 0,
+                'last_probe': self.last_probe
+            },
+            'time': self.time
+        }
 
     def render(self, mode='human'):
         self.logger.warning(f'LastProbe/LastReimage: {self.last_probe}/{self.last_reimage}')
         self.logger.warning(f'Server States: {self.servers}')
-        self.logger.warning(f'Attacker View: {self.get_attacker_state()}')
         time.sleep(5)
