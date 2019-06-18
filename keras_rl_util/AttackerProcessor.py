@@ -88,6 +88,9 @@ class AttackerProcessor(Processor):
 
         return new_state, attacker_reward, done, info
 
+    def process_action(self, action):
+        return action - 1
+
     def convert_state(self, time):
         new_state = []
         for server in self.servers:

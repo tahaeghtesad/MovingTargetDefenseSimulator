@@ -61,6 +61,8 @@ class MovingTargetDefenceEnv(gym.Env):
         self.attacker_total_reward = 0
         self.defender_total_reward = 0
 
+        self.defender_last_action = -1
+
     @staticmethod
     def sigmoid(x, tth, tsl=5):
         return 1. / (1. + math.exp(-tsl * (x - tth)))
@@ -82,6 +84,7 @@ class MovingTargetDefenceEnv(gym.Env):
 
         if server == -1:
             self.last_attack_cost = 0
+            self.last_probe = -1
             return 0
 
         self.last_attack_cost = -self.ca
@@ -109,6 +112,8 @@ class MovingTargetDefenceEnv(gym.Env):
         if not -1 <= server < self.m:
             raise Exception('Chosen server is not in range')
 
+        self.defender_last_action = server
+
         if server == -1:
             return
 
@@ -131,7 +136,6 @@ class MovingTargetDefenceEnv(gym.Env):
         }
 
     def step(self, action):
-        action -= 1
         assert self.time <= self.time_limit
         self.logger.debug(f'Round {self.time}/{self.time_limit}')
         ### Onlining servers
@@ -154,6 +158,8 @@ class MovingTargetDefenceEnv(gym.Env):
         ncd = sum(server['control'] == Party.Defender and server['status'] == -1 for server in self.servers)
         nd = sum(server['status'] > -1 for server in self.servers)
 
+        assert nca + ncd + nd == self.m, "N_ca, N_cd, or N_d is calculated incorrectly!"
+
         au = self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]) + self.last_attack_cost
         du = self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3])
 
@@ -162,7 +168,8 @@ class MovingTargetDefenceEnv(gym.Env):
         self.time += 1
 
         self.logger.debug(f'Received {au} utility.')
-        done = self.time == self.time_limit - 1
+        # done = self.time == self.time_limit - 1
+        done = nca == self.m
         self.attacker_total_reward += au
         self.defender_total_reward += du
         if done:
@@ -170,23 +177,27 @@ class MovingTargetDefenceEnv(gym.Env):
                 f'Attacker/Defender: {self.attacker_total_reward / self.time_limit:.4}/{self.defender_total_reward / self.time_limit:.4}')
 
         # observation, reward, done, info
-        return {
+        return ({
                    'att': {
                        'action': action,
                        'last_reimage': self.last_reimage,
                        'success': success
                    },
                    'def': {
-                       'action': action,
+                       'action': self.defender_last_action,
                        'last_probe': self.last_probe
                    },
                    'time': self.time
                }, {
                    'att': au,
                    'def': du
-               }, done, {}
+               }, done, {})
 
     def reset(self):
+
+        self.logger.info(
+            f'Attacker/Defender: {self.attacker_total_reward / 1000:.4f}/{self.defender_total_reward / 1000:.4f}')
+
         self.servers = []
         for i in range(self.m):
             self.servers.append({
@@ -205,6 +216,8 @@ class MovingTargetDefenceEnv(gym.Env):
         self.attacker_total_reward = 0
         self.defender_total_reward = 0
 
+        self.defender_last_action = -1
+
         self.defender = copy.deepcopy(self.defender_t)
 
         self.attacker_servers = []
@@ -218,14 +231,14 @@ class MovingTargetDefenceEnv(gym.Env):
         return {
             'att': {
                 'action': -1,
-                'last_reimage': self.last_reimage,
+                'last_reimage': -1,
                 'success': 0
             },
             'def': {
-                'action': 0,
-                'last_probe': self.last_probe
+                'action': -1,
+                'last_probe': -1
             },
-            'time': self.time
+            'time': 0
         }
 
     def render(self, mode='human'):
