@@ -1,27 +1,18 @@
-import gym
-import logging
-import gym_mtd
-import numpy as np
-import gym
 import os
 import sys
 import traceback
 
-from keras.models import *
+import gym
+import gym_mtd
 from keras.layers import *
 from keras.optimizers import *
-
 from rl.agents.dqn import *
-from rl.policy import *
 from rl.memory import *
-from rl.processors import *
-from rl.callbacks import *
+from rl.policy import *
 
-from tqdm import tqdm
-from BaseDefender import BaseDefender
 from Defenders import *
 from keras_rl_util.AttackerProcessor import AttackerProcessor
-from keras_rl_util.EpsDecayGreedyQPolicy import EpsDecayGreedyQPolicy
+from keras_rl_util.EpsNoNoOp import EpsNoNoOp
 
 rootLogger = logging.getLogger()
 
@@ -45,15 +36,7 @@ episodes = 100
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
-env = gym.make('MTD-v0', m=m, time_limit=sys.maxsize, utenv=0, setting=1, ca=0.2, defender=BaseDefender())
-
-# for i in range(episodes):
-#     for j in range(steps):
-#         action = env.action_space.sample()
-#         observ, reward, ended, info = env.step(action)
-#         print(f'{observ, reward, action, ended}')
-#     env.reset()
-#     break
+env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0., defender=MaxProbeDefender(p=8))
 
 nb_actions = env.action_space.n
 obs_dim = env.observation_space.shape
@@ -71,10 +54,8 @@ memory = SequentialMemory(limit=128,
                           window_length=1,
                           ignore_episode_boundaries=False)
 
-
-# policy = EpsDecayGreedyQPolicy(eps=1., decay=.98, step_decay=steps)
-# policy = GreedyQPolicy()
-policy = EpsGreedyQPolicy(eps=.1)
+# policy = EpsGreedyQPolicy(eps=1.)
+policy = EpsNoNoOp(eps=1)
 
 processor = AttackerProcessor(m=m)
 

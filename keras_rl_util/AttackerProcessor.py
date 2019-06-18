@@ -67,7 +67,7 @@ class AttackerProcessor(Processor):
         if action != -1:
             if success == 1:
                 self.servers[action]['control'] = 1
-                self.servers[action]['progress'] += 1
+                # self.servers[action]['progress'] += 1
                 self.servers[action]['status'] = -1
                 self.logger.debug('Probe was successful.')
             elif success == 0:

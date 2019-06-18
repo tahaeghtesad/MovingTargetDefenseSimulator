@@ -168,13 +168,13 @@ class MovingTargetDefenceEnv(gym.Env):
         self.time += 1
 
         self.logger.debug(f'Received {au} utility.')
-        # done = self.time == self.time_limit - 1
-        done = nca == self.m
+        done = self.time == self.time_limit
+        # done = nca == self.m
         self.attacker_total_reward += au
         self.defender_total_reward += du
         if done:
             self.logger.info(
-                f'Attacker/Defender: {self.attacker_total_reward / self.time_limit:.4}/{self.defender_total_reward / self.time_limit:.4}')
+                f'Attacker/Defender: {self.attacker_total_reward / self.time_limit:.4f}/{self.defender_total_reward / self.time_limit:.4f}')
 
         # observation, reward, done, info
         return ({
@@ -194,9 +194,6 @@ class MovingTargetDefenceEnv(gym.Env):
                }, done, {})
 
     def reset(self):
-
-        self.logger.info(
-            f'Attacker/Defender: {self.attacker_total_reward / 1000:.4f}/{self.defender_total_reward / 1000:.4f}')
 
         self.servers = []
         for i in range(self.m):
@@ -244,4 +241,4 @@ class MovingTargetDefenceEnv(gym.Env):
     def render(self, mode='human'):
         self.logger.warning(f'LastProbe/LastReimage: {self.last_probe}/{self.last_reimage}')
         self.logger.warning(f'Server States: {self.servers}')
-        time.sleep(5)
+        time.sleep(1)
