@@ -112,6 +112,8 @@ class MovingTargetDefenceEnv(gym.Env):
         if not -1 <= server < self.m:
             raise Exception('Chosen server is not in range')
 
+        self.last_reimage = -1
+
         self.defender_last_action = server
 
         if server == -1:
@@ -122,8 +124,6 @@ class MovingTargetDefenceEnv(gym.Env):
 
         if self.servers[server]['control'] == Party.Attacker:
             self.last_reimage = server
-        else:
-            self.last_reimage = -1
 
         # Defender reimaged a server which attacker probed in last action: Don't tell defender that attacker even attacked!
         if self.last_probe == server:
@@ -136,7 +136,7 @@ class MovingTargetDefenceEnv(gym.Env):
         }
 
     def step(self, action):
-        assert self.time <= self.time_limit
+        assert self.time < self.time_limit
         self.logger.debug(f'Round {self.time}/{self.time_limit}')
         ### Onlining servers
 
@@ -168,7 +168,7 @@ class MovingTargetDefenceEnv(gym.Env):
         self.time += 1
 
         self.logger.debug(f'Received {au} utility.')
-        done = self.time == self.time_limit
+        done = self.time == self.time_limit - 1
         # done = nca == self.m
         self.attacker_total_reward += au
         self.defender_total_reward += du

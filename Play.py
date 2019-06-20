@@ -36,7 +36,8 @@ episodes = 100
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
-env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0., defender=MaxProbeDefender(p=8))
+env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2, alpha=.05,
+                       defender=UniformDefender())
 
 nb_actions = env.action_space.n
 obs_dim = env.observation_space.shape
@@ -54,8 +55,8 @@ memory = SequentialMemory(limit=128,
                           window_length=1,
                           ignore_episode_boundaries=False)
 
-# policy = EpsGreedyQPolicy(eps=1.)
-policy = EpsNoNoOp(eps=1)
+policy = EpsGreedyQPolicy(eps=.1)
+# policy = EpsNoNoOp(eps=.1)
 
 processor = AttackerProcessor(m=m)
 
@@ -64,8 +65,8 @@ dqn = DQNAgent(model=model,
                memory=memory,
                # nb_steps_warmup=1 * steps,
                nb_steps_warmup=128,
-               enable_dueling_network=False,
-               enable_double_dqn=False,
+               enable_dueling_network=True,
+               enable_double_dqn=True,
                dueling_type='avg',
                target_model_update=1,
                train_interval=1,
