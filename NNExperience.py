@@ -43,7 +43,7 @@ class NNExperience(Experience):
         for i in range(len(samples)):
             q_sa = np.max(q_sas[i])
             # TODO revise the if
-            trainings[i][actions[i]] = rewards[i] + self.dr * q_sa * (0. if done[i] else 1.)
+            trainings[i][actions[i]] = rewards[i] + self.dr * q_sa #* (0. if done[i] else 1.)
 
         h = self.model.fit(np.array(states), trainings, epochs=2, batch_size=size, verbose=0)
         self.logger.debug(f'Loss: {h.history["loss"][0]}')

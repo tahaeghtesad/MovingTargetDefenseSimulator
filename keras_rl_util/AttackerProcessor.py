@@ -99,10 +99,6 @@ class AttackerProcessor(Processor):
             progress = server['progress']
             control = server['control']
 
-            if (up and time_to_up != 0) or (not up and (progress != 0 or control == 1)) or (
-                    time_to_up > 0 and progress > 0):
-                raise Exception('WTF is this state?', server)
-
             new_state.append(
                 [up, time_to_up, progress, control]
             )

@@ -24,7 +24,7 @@ rootLogger.addHandler(fileHandler)
 rootLogger.setLevel(logging.INFO)
 
 m = 10
-episodes = 200
+episodes = 60
 steps = 1000
 
 attack_exp = AttackerNNExperience('attacker', m=m, max_memory_size=steps)
@@ -33,19 +33,18 @@ attack_exp = AttackerNNExperience('attacker', m=m, max_memory_size=steps)
 def main():
     try:
         processor = AttackerProcessor(m=m)
-        env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2, alpha=.05,
+        env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.0, alpha=.05,
                        defender=UniformDefender())
 
         learner = AttackLearner(attack_exp, env, processor)
 
         learner.fit(steps, episodes)
 
-    except:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_traceback, limit=5, file=sys.stderr)
+    except KeyboardInterrupt:
+        pass
 
     finally:
-        learner.finalize(True)
+        # learner.finalize(True)
         learner.test(steps, 3)
 
 

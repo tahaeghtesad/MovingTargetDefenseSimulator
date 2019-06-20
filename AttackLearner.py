@@ -3,6 +3,7 @@ from gym_mtd.envs.MTDEnv import MovingTargetDefenceEnv
 from rl.processors import Processor
 
 import numpy as np
+import sys
 
 from Experience import Experience
 
@@ -24,15 +25,13 @@ class AttackLearner:
 
     def fit(self, steps, episodes):
 
-        epsilon = 1
-        decay = 0.96
+        epsilon = 1 if not getattr(sys, 'gettrace', None)() else 0
+        decay = 0.975
 
         for e in range(episodes):
             observation = self.processor.process_observation(self.env.reset())
             self.experience.record_state(observation)
             for s in range(steps):
-
-                prev_obs = observation
 
                 if np.random.rand() < epsilon * decay ** e:
                     if np.random.rand() < .1:
@@ -57,15 +56,12 @@ class AttackLearner:
                         * self.env.step(
                             self.processor.process_action(action)))
 
-                if np.array_equal(prev_obs, observation) and action != 0 and observation[(action - 1) * 4 + 3] == 0:
-                    print('Exception?')
-
                 self.experience.record_reward(reward)
                 self.experience.record_action(action)
                 self.experience.record_done(done)
                 self.experience.record_state(observation)
 
-                self.experience.train_model(32)
+                self.experience.train_model(int(2 * 1.08 ** e))
 
                 if done:
                     break
@@ -76,7 +72,9 @@ class AttackLearner:
             observation = self.processor.process_observation(self.env.reset())
             for s in range(steps):
                 action = np.argmax(self.experience.predict(observation))
-                observation, reward, done, inf = self.processor.process_step(* self.env.step(self.processor.process_action(action)))
+                observation, reward, done, inf = self.processor.process_step(
+                    * self.env.step(
+                        self.processor.process_action(action)))
 
     def finalize(self, f):
         if f:
