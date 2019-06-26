@@ -1,1 +1,1 @@
-from gym_mtd.envs.MTDEnv import MovingTargetDefenceEnv
+from gym_mtd.envs.MTDEnv import MovingTargetDefenceEnv, MTDAttackerEnv

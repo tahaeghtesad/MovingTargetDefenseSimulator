@@ -1,11 +1,9 @@
-from rl.core import Processor
-
 import numpy as np
 
 import logging
 
 
-class AttackerProcessor(Processor):
+class AttackerProcessor:
 
     def __init__(self, m=10, downtime=7):
         super().__init__()

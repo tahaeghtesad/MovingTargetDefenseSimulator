@@ -7,7 +7,10 @@ import random
 import numpy as np
 import time
 import copy
+
 from Defenders import UniformDefender
+
+from util.AttackerProcessor import AttackerProcessor
 
 
 class Party(Enum):
@@ -42,7 +45,7 @@ class MovingTargetDefenceEnv(gym.Env):
         self.utenv, self.setting = MovingTargetDefenceEnv.get_params(utenv, setting)
 
         self.time = 0
-        self.epoch = 0
+        self.episodes = 0
 
         self.defender = UniformDefender(4, m, downtime) if defender is None else defender
         self.defender_t = copy.deepcopy(defender)
@@ -54,9 +57,6 @@ class MovingTargetDefenceEnv(gym.Env):
                 'progress': 0,
                 'control': 0
             })
-
-        self.action_space = Discrete(m + 1)
-        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)  ## for attacker
 
         self.attacker_total_reward = 0
         self.defender_total_reward = 0
@@ -168,13 +168,13 @@ class MovingTargetDefenceEnv(gym.Env):
         self.time += 1
 
         self.logger.debug(f'Received {au} utility.')
-        done = self.time == self.time_limit - 1
+        done = self.time == self.time_limit
         # done = nca == self.m
         self.attacker_total_reward += au
         self.defender_total_reward += du
         if done:
             self.logger.info(
-                f'Attacker/Defender: {self.attacker_total_reward / self.time_limit:.4f}/{self.defender_total_reward / self.time_limit:.4f}')
+                f'Game {self.episodes} - Attacker/Defender: {self.attacker_total_reward / self.time_limit:.4f}/{self.defender_total_reward / self.time_limit:.4f}')
 
         # observation, reward, done, info
         return ({
@@ -208,7 +208,6 @@ class MovingTargetDefenceEnv(gym.Env):
         self.last_attack_cost = 0
 
         self.time = 0
-        self.epoch = 0
 
         self.attacker_total_reward = 0
         self.defender_total_reward = 0
@@ -216,6 +215,8 @@ class MovingTargetDefenceEnv(gym.Env):
         self.defender_last_action = -1
 
         self.defender = copy.deepcopy(self.defender_t)
+
+        self.episodes += 1
 
         self.attacker_servers = []
         for i in range(self.m):
@@ -242,3 +243,26 @@ class MovingTargetDefenceEnv(gym.Env):
         self.logger.warning(f'LastProbe/LastReimage: {self.last_probe}/{self.last_reimage}')
         self.logger.warning(f'Server States: {self.servers}')
         time.sleep(1)
+
+
+class MTDAttackerEnv(MovingTargetDefenceEnv):
+
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2,
+                 defender=None):
+        super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca, defender)
+        self.action_space = Discrete(m + 1)
+        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)  ## for attacker
+
+        self.processor = AttackerProcessor(m, downtime)
+
+    def step(self, action):
+        return self.processor.process_step(
+            * super().step(
+                self.processor.process_action(
+                    action
+                )
+            )
+        )
+
+    def reset(self):
+        return self.processor.process_observation(super().reset())
