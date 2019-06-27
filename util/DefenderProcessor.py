@@ -72,7 +72,7 @@ class DefenderProcessor:
         ### Converting state
         new_state = self.convert_state(time)
 
-        return new_state, defender_reward, done, info
+        return new_state, defender_reward - 1, done, info
 
     def process_action(self, action):
         return action - 1
