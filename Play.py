@@ -4,12 +4,13 @@ import traceback
 
 import gym
 import gym_mtd
+import logging
 import stable_baselines
 import tensorflow as tf
-from stable_baselines.deepq.policies import FeedForwardPolicy, MlpPolicy
-from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines.deepq.policies import MlpPolicy
 
-from Defenders import *
+from agents.defenders import UniformDefender
+from agents.attackers import UniformAttacker
 
 rootLogger = logging.getLogger()
 
@@ -25,15 +26,18 @@ rootLogger.addHandler(fileHandler)
 
 debug = False
 m = 10
-steps = 200
-episodes = 1000
+steps = 1000
+episodes = 300
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
-env = DummyVecEnv([lambda: gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.0, alpha=.05,
-               defender=UniformDefender())])
+attacker_env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.0, alpha=.05,
+               defender=UniformDefender())
 
-weight_path = 'attacker.pkl'
+defender_env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.0, alpha=.05,
+               attacker=UniformAttacker())
+
+weight_path = 'weights.pkl'
 
 
 class CustomPolicy(MlpPolicy):
@@ -41,43 +45,44 @@ class CustomPolicy(MlpPolicy):
         super().__init__(*args, **kwargs,
                          act_fun=tf.nn.sigmoid,
                          layers=[256, 128],
-                         layer_norm=False,
                          dueling=False,
-                         feature_extraction="mlp"
                          )
 
 
-model = stable_baselines.DQN(
+attacker_model = stable_baselines.DQN(
     policy=CustomPolicy,
-    env=env,
-    # gamma=.9,
-    # learning_rate=5e-3,
-    # buffer_size=steps,
-    # exploration_fraction=.3,
-    # exploration_final_eps=.5,
-    # train_freq=steps,
-    # batch_size=steps,
-    # checkpoint_freq=10000,
-    # checkpoint_path=None,
-    # learning_starts=1000,
-    # target_network_update_freq=steps,
-    # prioritized_replay=True,
-    # param_noise=False,
+    env=attacker_env,
     verbose=2,
     tensorboard_log='tb_logs',
     full_tensorboard_log=True
 )
 
-# if os.path.isfile(weight_path):
-#     print('Loading weight file...')
-#     model.load(weight_path, env)
+defender_model = stable_baselines.DQN(
+    policy=CustomPolicy,
+    env=defender_env,
+    verbose=2,
+    tensorboard_log='tb_logs',
+    full_tensorboard_log=True
+)
+
+if os.path.isfile(f'defender_{weight_path}') and os.path.isfile(f'attacker_{weight_path}'):
+    print('Loading weight file...')
+    attacker_model.load(f'attacker_{weight_path}', attacker_env)
+    defender_model.load(f'defender_{weight_path}', defender_env)
 
 try:
-    model.learn(
+    defender_model.learn(
         total_timesteps=episodes * steps,
         callback=None,
         log_interval=1,
-        tb_log_name=f'DQN_{model.gamma:.2f}_{model.exploration_fraction:.2f}_{model.exploration_final_eps:.2f}_{model.learning_rate:.5f}_{model.prioritized_replay}_{False}'
+        tb_log_name=f'DQN_defender'
+    )
+
+    attacker_model.learn(
+        total_timesteps=episodes * steps,
+        callback=None,
+        log_interval=1,
+        tb_log_name=f'DQN_attacker'
     )
 
 except KeyboardInterrupt:
@@ -89,4 +94,5 @@ except Exception:
 
 finally:
     print('Saving weight file...')
-    model.save(weight_path)
+    attacker_model.save(f'attacker_{weight_path}')
+    defender_model.save(f'defender_{weight_path}')

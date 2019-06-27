@@ -8,9 +8,8 @@ import numpy as np
 import time
 import copy
 
-from Defenders import UniformDefender
-
 from util.AttackerProcessor import AttackerProcessor
+from util.DefenderProcessor import DefenderProcessor
 
 
 class Party(Enum):
@@ -20,8 +19,7 @@ class Party(Enum):
 
 class MovingTargetDefenceEnv(gym.Env):
 
-    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2,
-                 defender=None):
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
         self.logger = logging.getLogger(__name__)
         self.servers = []
         for i in range(m):
@@ -46,9 +44,6 @@ class MovingTargetDefenceEnv(gym.Env):
 
         self.time = 0
         self.episodes = 0
-
-        self.defender = UniformDefender(4, m, downtime) if defender is None else defender
-        self.defender_t = copy.deepcopy(defender)
 
         self.attacker_servers = []
         for i in range(m):
@@ -135,7 +130,7 @@ class MovingTargetDefenceEnv(gym.Env):
             'progress': 0
         }
 
-    def step(self, action):
+    def step(self, action: tuple):  # Action[0] is the attacker's move, Action[1] the defender's.
         assert self.time < self.time_limit
         self.logger.debug(f'Round {self.time}/{self.time_limit}')
         ### Onlining servers
@@ -147,11 +142,10 @@ class MovingTargetDefenceEnv(gym.Env):
 
         ### Doing actions
 
-        p_last_probe = self.last_probe
+        att_a, def_r = action
 
-        success = self.probe(action)
-
-        self.defender.reimage(self.time, p_last_probe, self.reimage)
+        success = self.probe(att_a)
+        self.reimage(def_r)
 
         ### Calculate utility
         nca = sum(server['control'] == Party.Attacker for server in self.servers)
@@ -162,8 +156,6 @@ class MovingTargetDefenceEnv(gym.Env):
 
         au = self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]) + self.last_attack_cost
         du = self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3])
-
-        self.defender.update_utility(du)
 
         self.time += 1
 
@@ -179,7 +171,7 @@ class MovingTargetDefenceEnv(gym.Env):
         # observation, reward, done, info
         return ({
                    'att': {
-                       'action': action,
+                       'action': att_a,
                        'last_reimage': self.last_reimage,
                        'success': success
                    },
@@ -214,8 +206,6 @@ class MovingTargetDefenceEnv(gym.Env):
 
         self.defender_last_action = -1
 
-        self.defender = copy.deepcopy(self.defender_t)
-
         self.episodes += 1
 
         self.attacker_servers = []
@@ -247,22 +237,66 @@ class MovingTargetDefenceEnv(gym.Env):
 
 class MTDAttackerEnv(MovingTargetDefenceEnv):
 
-    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2,
-                 defender=None):
-        super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca, defender)
+    def __init__(self, defender, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
+        super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca)
         self.action_space = Discrete(m + 1)
-        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)  ## for attacker
+        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)
 
-        self.processor = AttackerProcessor(m, downtime)
+        self.attacker_processor = AttackerProcessor(m, downtime)
+        self.defender_processor = DefenderProcessor(m, downtime)
+
+        self.defender_b = defender
+        self.defender = copy.deepcopy(self.defender_b)
+
+        self.last_defender_obs = None
 
     def step(self, action):
-        return self.processor.process_step(
-            * super().step(
-                self.processor.process_action(
-                    action
-                )
-            )
-        )
+
+        attacker_action = self.attacker_processor.process_action(action)
+        defender_action = self.defender.predict(self.last_defender_obs)
+        observation, reward, done, info = super().step((attacker_action, defender_action))
+
+        self.last_defender_obs, _, _, _ = self.defender_processor.process_step(observation, reward, done, info)
+
+        return self.attacker_processor.process_step(observation, reward, done, info)
 
     def reset(self):
-        return self.processor.process_observation(super().reset())
+        self.defender = copy.deepcopy(self.defender_b)
+        observation = super().reset()
+
+        self.last_defender_obs = self.defender_processor.process_observation(observation)
+        return self.attacker_processor.process_observation(observation)
+
+
+class MTDDefenderEnv(MovingTargetDefenceEnv):
+
+    def __init__(self, attacker, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
+        super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca)
+
+        self.action_space = Discrete(m + 1)
+        self.observation_space = MultiDiscrete([2, 7, 32, 512, 512] * m)
+
+        self.attacker_processor = AttackerProcessor(m, downtime)
+        self.defender_processor = DefenderProcessor(m, downtime)
+
+        self.attacker_b = attacker
+        self.attacker = copy.deepcopy(self.attacker_b)
+
+        self.last_attacker_obs = None
+
+    def step(self, action):
+
+        attacker_action = self.attacker.predict(self.last_attacker_obs)
+        defender_action = self.defender_processor.process_action(action)
+        observation, reward, done, info = super().step((attacker_action, defender_action))
+
+        self.last_attacker_obs, _, _, _ = self.attacker_processor.process_step(observation, reward, done, info)
+
+        return self.defender_processor.process_step(observation, reward, done, info)
+
+    def reset(self):
+        self.attacker = copy.deepcopy(self.attacker_b)
+        observation = super().reset()
+
+        self.last_attacker_obs = self.attacker_processor.process_observation(observation)
+        return self.defender_processor.process_observation(observation)

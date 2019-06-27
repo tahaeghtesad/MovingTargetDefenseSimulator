@@ -12,3 +12,8 @@ register(
     id='MTDAtt-v0',
     entry_point='gym_mtd.envs:MTDAttackerEnv'
 )
+
+register(
+    id='MTDDef-v0',
+    entry_point='gym_mtd.envs:MTDDefenderEnv'
+)
