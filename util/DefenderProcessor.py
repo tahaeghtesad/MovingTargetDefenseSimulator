@@ -36,7 +36,7 @@ class DefenderProcessor:
     def process_step(self, observation, reward, done, info):
 
         ### updating reward
-        defender_reward = reward['def']
+        defender_reward = reward['def']# - reward['att']
         # assert -2 <= attacker_reward <= 0
 
         ### extracting observation parameters
@@ -72,7 +72,7 @@ class DefenderProcessor:
         ### Converting state
         new_state = self.convert_state(time)
 
-        return new_state, defender_reward - 1, done, info
+        return new_state, defender_reward, done, info
 
     def process_action(self, action):
         return action - 1

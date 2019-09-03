@@ -19,8 +19,23 @@ class Party(Enum):
 
 class MovingTargetDefenceEnv(gym.Env):
 
-    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
+    def __init__(self, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=2, setting=1, ca=.2):
         self.logger = logging.getLogger(__name__)
+
+        self.config = {
+            'm': m,
+            'delta': downtime,
+            'alpha': alpha,
+            'T': time_limit,
+            'nu': probe_detection,
+            'utenv': utenv,
+            'setting': setting,
+            'c_a': ca
+        }
+
+        self.logger.info(f'Initializing game...')
+        self.logger.info(self.config)
+
         self.servers = []
         for i in range(m):
             self.servers.append({
@@ -57,6 +72,8 @@ class MovingTargetDefenceEnv(gym.Env):
         self.defender_total_reward = 0
 
         self.defender_last_action = -1
+
+        self.reward_range = (0, 1)
 
     @staticmethod
     def sigmoid(x, tth, tsl=5):
@@ -170,20 +187,37 @@ class MovingTargetDefenceEnv(gym.Env):
 
         # observation, reward, done, info
         return ({
-                   'att': {
-                       'action': att_a,
-                       'last_reimage': self.last_reimage,
-                       'success': success
-                   },
-                   'def': {
-                       'action': self.defender_last_action,
-                       'last_probe': self.last_probe
-                   },
-                   'time': self.time
-               }, {
-                   'att': au,
-                   'def': du
-               }, done, {})
+                    'att': {
+                        'action': att_a,
+                        'last_reimage': self.last_reimage,
+                        'success': success
+                    },
+                    'def': {
+                        'action': self.defender_last_action,
+                        'last_probe': self.last_probe
+                    },
+                    'time': self.time
+                }, {
+                    'att': au,
+                    'def': du
+                }, done, {
+                    'actions': {
+                        'att': {
+                            'action': att_a,
+                            'last_reimage': self.last_reimage,
+                            'success': success
+                        },
+                        'def': {
+                            'action': self.defender_last_action,
+                            'last_probe': self.last_probe
+                        }
+                    },
+                    'time': self.time,
+                    'rewards': {
+                        'att': au,
+                        'def': du
+                    }
+                })
 
     def reset(self):
 
@@ -237,8 +271,13 @@ class MovingTargetDefenceEnv(gym.Env):
 
 class MTDAttackerEnv(MovingTargetDefenceEnv):
 
-    def __init__(self, defender, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
+    def __init__(self, defender, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0,
+                 ca=.2):
         super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca)
+
+        self.logger.info(f'Defender: {defender.__class__.__name__}')
+        self.config['opponent'] = defender.__class__.__name__
+
         self.action_space = Discrete(m + 1)
         self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)
 
@@ -251,7 +290,6 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
         self.last_defender_obs = None
 
     def step(self, action):
-
         attacker_action = self.attacker_processor.process_action(action)
         defender_action = self.defender.predict(self.last_defender_obs)
         observation, reward, done, info = super().step((attacker_action, defender_action))
@@ -270,8 +308,12 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
 
 class MTDDefenderEnv(MovingTargetDefenceEnv):
 
-    def __init__(self, attacker, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0, ca=.2):
+    def __init__(self, attacker, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0,
+                 ca=.2):
         super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca)
+
+        self.logger.info(f'Attacker: {attacker.__class__.__name__}')
+        self.config['opponent'] = attacker.__class__.__name__
 
         self.action_space = Discrete(m + 1)
         self.observation_space = MultiDiscrete([2, 7, 32, 512, 512] * m)
@@ -285,7 +327,6 @@ class MTDDefenderEnv(MovingTargetDefenceEnv):
         self.last_attacker_obs = None
 
     def step(self, action):
-
         attacker_action = self.attacker.predict(self.last_attacker_obs)
         defender_action = self.defender_processor.process_action(action)
         observation, reward, done, info = super().step((attacker_action, defender_action))

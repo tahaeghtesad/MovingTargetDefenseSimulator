@@ -35,7 +35,7 @@ class AttackerProcessor:
     def process_step(self, observation, reward, done, info):
 
         ### updating reward
-        attacker_reward = reward['att']
+        attacker_reward = reward['att']# - reward['def']
         # assert -2 <= attacker_reward <= 0
 
         ### extracting observation parameters
