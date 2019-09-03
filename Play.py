@@ -38,13 +38,13 @@ csv_row = [f'log_{str(id).replace("-","_")}.log', 'Attacker' if training_mode el
 debug = False
 m = 10
 steps = 5000
-episodes = 1000
+episodes = 100
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
 if training_mode:
     env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2,
-                   defender=PCPDefender())
+                   defender=UniformDefender())
 
 else:
     env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2,
@@ -85,13 +85,13 @@ def get_params_dqn(dqn_model: stable_baselines.DQN):
 
 attacker_policy = {
     'activation': tf.nn.tanh,
-    'layers': [256, 128],
+    'layers': [256],
     'dueling': False
 }
 
 defender_policy = {
     'activation': tf.nn.tanh,
-    'layers': [256, 128],
+    'layers': [256],
     'dueling': False
 }
 
@@ -189,14 +189,14 @@ try:
     rootLogger.info(f'Begin training for {episodes} episodes/{steps} steps')
 
     if training_mode:
-        env.learn(
+        attacker_model.learn(
             total_timesteps=episodes * steps,
             callback=callback,
             log_interval=1,
             tb_log_name=f'DQN_attacker_{str(id).split("-")[0]}'
         )
     else:
-        env.learn(
+        defender_model.learn(
             total_timesteps=episodes * steps,
             callback=callback,
             log_interval=1,
@@ -213,6 +213,6 @@ except Exception:
 finally:
     print('Saving weight file...')
     if training_mode:
-        env.save(f'weights/attacker_{str(id).split("-")[0]}_{weight_path}')
+        attacker_model.save(f'weights/attacker_{str(id).split("-")[0]}_{weight_path}')
     else:
-        env.save(f'weights/defender_{str(id).split("-")[0]}_{weight_path}')
+        defender_model.save(f'weights/defender_{str(id).split("-")[0]}_{weight_path}')
