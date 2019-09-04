@@ -9,7 +9,7 @@ def get_values(path, weight, samples):
 
     values = []
     time_offset = None
-    smoothed = 0
+    smoothed_r = 0
 
     # begin = datetime.now()
     for e in tf.train.summary_iterator(path):
@@ -19,8 +19,8 @@ def get_values(path, weight, samples):
 
         for v in e.summary.value:
             if v.tag == 'input_info/rewards':
-                smoothed = weight * smoothed + (1-weight) * v.simple_value
-                values.append((e.wall_time - time_offset, e.step, smoothed))
+                smoothed_r = weight * smoothed_r + (1-weight) * v.simple_value
+                values.append((e.wall_time - time_offset, e.step, smoothed_r))
             #     print(v.simple_value)
             # pass
         # print(e.wall_time)
@@ -36,11 +36,14 @@ if __name__ == '__main__':
     for subdir, dirs, files in os.walk('tb_logs'):
         for dir in tqdm(dirs):
             for s, ds, fs in os.walk(f'tb_logs/{dir}'):
-                with open(f'reward_plots/{dir}.csv', 'w') as fd:
-                    writer = csv.writer(fd)
-                    values = get_values(f'tb_logs/{dir}/{fs[0]}', 0.99, 5000)
+                try:
+                    with open(f'reward_plots/{dir}.csv', 'w') as fd:
+                        writer = csv.writer(fd)
+                        values = get_values(f'tb_logs/{dir}/{fs[0]}', 0.99, 5000)
 
-                    writer.writerow(['time', 'step', 'reward'])
+                        writer.writerow(['time', 'step', 'reward'])
 
-                    for r in values:
-                        writer.writerow(list(r))
+                        for r in values:
+                            writer.writerow(list(r))
+                except:
+                    pass

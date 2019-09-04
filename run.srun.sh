@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH -J MTD
-#SBATCH -t 4:00:00
+#SBATCH -t 8:00:00
 #SBATCH -N 1 -n 4
-#SBATCH --mem 2GB
+#SBATCH --mem 4GB
 ##SBATCH -p gpu
 ##SBATCH --gres=gpu:1
 
