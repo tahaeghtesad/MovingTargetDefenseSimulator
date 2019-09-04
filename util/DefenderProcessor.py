@@ -42,7 +42,7 @@ class DefenderProcessor:
         ### extracting observation parameters
 
         last_probe = observation['def']['last_probe']
-        action = observation['att']['action']
+        action = observation['def']['action']
         time = observation['time']
 
         ### updating state
@@ -57,6 +57,7 @@ class DefenderProcessor:
 
         if last_probe != -1:
             self.servers[last_probe]['progress'] += 1
+            self.last_probe[last_probe] = time
 
         if action != -1 and self.servers[action]['status'] == -1:
             self.logger.debug('Reimage was successful.')
@@ -65,9 +66,9 @@ class DefenderProcessor:
         else:
             self.logger.debug('Reimage was unsuccessful.')
 
-        if action != 0:
-            self.last_reimage[action - 1] = time
-            self.last_probe[action - 1] = -1
+        if action != -1:
+            self.last_reimage[action] = time
+            self.last_probe[action] = -1
 
         ### Converting state
         new_state = self.convert_state(time)
