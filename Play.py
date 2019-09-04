@@ -9,8 +9,10 @@ import gym_mtd
 import logging
 import stable_baselines
 import tensorflow as tf
+import importlib
 from stable_baselines.deepq.policies import *
 from stable_baselines.common.vec_env import *
+
 
 from agents.defenders import *
 from agents.attackers import *
@@ -31,6 +33,12 @@ fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
 
 training_mode = sys.argv[1] == 'attacker'
+episodes = int(sys.argv[2])
+opponent = getattr(importlib.import_module('agents.defenders'), sys.argv[3]) if training_mode else getattr(importlib.import_module('agents.attackers'), sys.argv[3])
+ef = float(sys.argv[4])
+ev = float(sys.argv[5])
+layers = [] if sys.argv[6] == 'x' else [int(c) for c in sys.argv[6].split(',')]
+
 print(f'Training Mode: {"Attacker" if training_mode else "Defender"}')
 
 csv_row = [f'log_{str(id).replace("-","_")}.log', 'Attacker' if training_mode else 'Defender']
@@ -38,17 +46,17 @@ csv_row = [f'log_{str(id).replace("-","_")}.log', 'Attacker' if training_mode el
 debug = False
 m = 10
 steps = 5000
-episodes = 100
+# episodes = 100
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
 if training_mode:
     env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2,
-                   defender=UniformDefender())
+                   defender=opponent())
 
 else:
     env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2,
-                   attacker=UniformAttacker())
+                   attacker=opponent())
 
 params = env.config
 csv_row += [params['opponent'], '', episodes, params['m'], params['delta'], params['alpha'], params['T'], params['nu'], params['utenv'], params['setting'], params['c_a'], '']
@@ -85,13 +93,13 @@ def get_params_dqn(dqn_model: stable_baselines.DQN):
 
 attacker_policy = {
     'activation': tf.nn.tanh,
-    'layers': [256],
+    'layers': layers,
     'dueling': False
 }
 
 defender_policy = {
     'activation': tf.nn.tanh,
-    'layers': [256],
+    'layers': layers,
     'dueling': False
 }
 
@@ -127,8 +135,8 @@ if training_mode:
     attacker_model = stable_baselines.DQN(
         policy=CustomAttackerPolicy,
         env=DummyVecEnv([lambda: env]),
-        exploration_fraction=0.2,
-        exploration_final_eps=0.02,
+        exploration_fraction=ef,
+        exploration_final_eps=ev,
         verbose=2,
         tensorboard_log='tb_logs',
         full_tensorboard_log=True
@@ -140,8 +148,8 @@ else:
     defender_model = stable_baselines.DQN(
         policy=CustomDefenderPolicy,
         env=DummyVecEnv([lambda: env]),
-        exploration_fraction=0.2,
-        exploration_final_eps=0.02,
+        exploration_fraction=ef,
+        exploration_final_eps=ev,
         verbose=2,
         tensorboard_log='tb_logs',
         full_tensorboard_log=True
@@ -158,7 +166,7 @@ csv_row += [dqn_params['prioritized_replay'], dqn_params['exploration_final_eps'
 #     attacker_model.load(f'attacker_{weight_path}', attacker_env)
 #     defender_model.load(f'defender_{weight_path}', defender_env)
 
-with open('Reports.csv', 'a') as fd:
+with open('reports.csv', 'a') as fd:
     writer = csv.writer(fd)
     writer.writerow(csv_row)
 
