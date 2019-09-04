@@ -1,6 +1,6 @@
 import random
 import csv
-from tqdm import tqdm
+import multiprocessing
 import os
 import tensorflow as tf
 
@@ -31,19 +31,28 @@ def get_values(path, weight, samples):
     return sorted(random.sample(values, samples), key=lambda i: i[1])
 
 
+def store(params):
+    dir, name = params
+    with open(f'reward_plots/{dir}.csv', 'w') as fd:
+        writer = csv.writer(fd)
+        values = get_values(f'tb_logs/{dir}/{name}', 0.99, 5000)
+
+        writer.writerow(['time', 'step', 'reward'])
+
+        for r in values:
+            writer.writerow(list(r))
+
+    print(f'{dir} Compiled.')
+
+
 if __name__ == '__main__':
 
+    paths = []
+
     for subdir, dirs, files in os.walk('tb_logs'):
-        for dir in tqdm(dirs):
+        for dir in dirs:
             for s, ds, fs in os.walk(f'tb_logs/{dir}'):
-                try:
-                    with open(f'reward_plots/{dir}.csv', 'w') as fd:
-                        writer = csv.writer(fd)
-                        values = get_values(f'tb_logs/{dir}/{fs[0]}', 0.99, 5000)
+                paths.append((dir, fs[0]))
 
-                        writer.writerow(['time', 'step', 'reward'])
-
-                        for r in values:
-                            writer.writerow(list(r))
-                except:
-                    pass
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    pool.map(store, paths)
