@@ -33,16 +33,17 @@ def get_values(path, weight, samples):
 
 def store(params):
     dir, name = params
+    values = get_values(f'tb_logs/{dir}/{name}', 0.99, 5000)
+
     with open(f'reward_plots/{dir}.csv', 'w') as fd:
         writer = csv.writer(fd)
-        values = get_values(f'tb_logs/{dir}/{name}', 0.99, 5000)
-
         writer.writerow(['time', 'step', 'reward'])
 
         for r in values:
             writer.writerow(list(r))
 
     print(f'{dir} Compiled.')
+    return None
 
 
 if __name__ == '__main__':
@@ -54,5 +55,5 @@ if __name__ == '__main__':
             for s, ds, fs in os.walk(f'tb_logs/{dir}'):
                 paths.append((dir, fs[0]))
 
-    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    pool = multiprocessing.Pool(int(multiprocessing.cpu_count() / 2))
     pool.map(store, paths)
