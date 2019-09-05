@@ -63,21 +63,26 @@ def get_values(path, weight, sample_no):
 def store(params):
     dir, name = params
     accuracy = 5000
-    values = get_values(f'tb_logs/{dir}/{name}', 0.99, accuracy)
+    try:
+        values = get_values(f'tb_logs/{dir}/{name}', 0.99, accuracy)
 
-    with open(f'reward_plots/{dir}.csv', 'w') as fd:
-        writer = csv.writer(fd)
-        header = []
-        for k in values.keys():
-            header += [f'time_{k}', f'step_{k}', k]
-
-        writer.writerow(header)
-
-        for i in range(0, accuracy):
-            row = []
+        with open(f'reward_plots/{dir}.csv', 'w') as fd:
+            writer = csv.writer(fd)
+            header = []
             for k in values.keys():
-                row += values[k][i]
-            writer.writerow(row)
+                header += [f'time_{k}', f'step_{k}', k]
+
+            writer.writerow(header)
+
+            for i in range(0, accuracy):
+                row = []
+                for k in values.keys():
+                    row += values[k][i]
+                writer.writerow(row)
+    except KeyboardInterrupt:
+        exit(-1)
+    except:
+        pass
 
     return None
 
