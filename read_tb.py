@@ -2,12 +2,15 @@ import random
 import csv
 import multiprocessing
 import os
+from datetime import datetime
 import tensorflow as tf
 
 
 def get_values(path, weight, sample_no):
 
-    values = []
+    start = datetime.now()
+    print(f'Beginning collection for {path}')
+
     time_offset = None
     smoothed = {
         'reward': 0,
@@ -15,6 +18,14 @@ def get_values(path, weight, sample_no):
         'action': 0,
         'loss': 0,
         'td_error': 0
+    }
+
+    values = {
+        'reward': [],
+        'eps': [],
+        'action': [],
+        'loss': [],
+        'td_error': []
     }
 
     # begin = datetime.now()
@@ -26,39 +37,48 @@ def get_values(path, weight, sample_no):
         for v in e.summary.value:
             if v.tag == 'input_info/rewards':
                 smoothed['reward'] = weight * smoothed['reward'] + (1-weight) * v.simple_value
+                values['reward'].append([e.wall_time - time_offset, e.step, smoothed['reward']])
             if v.tag == 'input_info/eps':
                 smoothed['eps'] = v.simple_value
+                values['eps'].append([e.wall_time - time_offset, e.step, smoothed['eps']])
             if v.tag == 'game/actions':
                 smoothed['action'] = weight * smoothed['action'] + (1-weight) * v.simple_value
+                values['action'].append([e.wall_time - time_offset, e.step, smoothed['action']])
             if v.tag == 'loss/loss':
                 smoothed['loss'] = weight * smoothed['loss'] + (1-weight) * v.simple_value
+                values['loss'].append([e.wall_time - time_offset, e.step, smoothed['loss']])
             if v.tag == 'loss/td_error':
                 smoothed['td_error'] = weight * smoothed['td_error'] + (1 - weight) * v.simple_value
+                values['td_error'].append([e.wall_time - time_offset, e.step, smoothed['td_error']])
 
-            values.append([e.wall_time - time_offset, e.step] + smoothed.values())
+    samples = {}
+    for k in values.keys():
+        samples[k] = random.sample(values[k], sample_no)
 
-        # print(e.wall_time)
-        # print(e.step)
-
-    # print(f'Loading took {datetime.now() - begin}')
-
-    samples = random.sample(values, sample_no)
+    print(f'Done collection for {path}. It took: {datetime.now() - start}')
 
     return samples
 
 
 def store(params):
     dir, name = params
-    values = get_values(f'tb_logs/{dir}/{name}', 0.99, 5000)
+    accuracy = 5000
+    values = get_values(f'tb_logs/{dir}/{name}', 0.99, accuracy)
 
     with open(f'reward_plots/{dir}.csv', 'w') as fd:
         writer = csv.writer(fd)
-        writer.writerow(['time', 'step', 'reward', 'eps', 'action', 'loss', 'td_error'])
+        header = []
+        for k in values.keys():
+            header += [f'time_{k}', f'step_{k}', k]
 
-        for r in values:
-            writer.writerow(list(r))
+        writer.writerow(header)
 
-    print(f'{dir} Compiled.')
+        for i in range(0, accuracy):
+            row = []
+            for k in values.keys():
+                row += values[k][i]
+            writer.writerow(row)
+
     return None
 
 
