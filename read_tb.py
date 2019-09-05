@@ -5,11 +5,17 @@ import os
 import tensorflow as tf
 
 
-def get_values(path, weight, samples):
+def get_values(path, weight, sample_no):
 
     values = []
     time_offset = None
-    smoothed_r = 0
+    smoothed = {
+        'reward': 0,
+        'eps': 0,
+        'action': 0,
+        'loss': 0,
+        'td_error': 0
+    }
 
     # begin = datetime.now()
     for e in tf.train.summary_iterator(path):
@@ -19,16 +25,26 @@ def get_values(path, weight, samples):
 
         for v in e.summary.value:
             if v.tag == 'input_info/rewards':
-                smoothed_r = weight * smoothed_r + (1-weight) * v.simple_value
-                values.append((e.wall_time - time_offset, e.step, smoothed_r))
-            #     print(v.simple_value)
-            # pass
+                smoothed['reward'] = weight * smoothed['reward'] + (1-weight) * v.simple_value
+            if v.tag == 'input_info/eps':
+                smoothed['eps'] = v.simple_value
+            if v.tag == 'game/actions':
+                smoothed['action'] = weight * smoothed['action'] + (1-weight) * v.simple_value
+            if v.tag == 'loss/loss':
+                smoothed['loss'] = weight * smoothed['loss'] + (1-weight) * v.simple_value
+            if v.tag == 'loss/td_error':
+                smoothed['td_error'] = weight * smoothed['td_error'] + (1 - weight) * v.simple_value
+
+            values.append([e.wall_time - time_offset, e.step] + smoothed.values())
+
         # print(e.wall_time)
         # print(e.step)
 
     # print(f'Loading took {datetime.now() - begin}')
 
-    return sorted(random.sample(values, samples), key=lambda i: i[1])
+    samples = random.sample(values, sample_no)
+
+    return samples
 
 
 def store(params):
@@ -37,7 +53,7 @@ def store(params):
 
     with open(f'reward_plots/{dir}.csv', 'w') as fd:
         writer = csv.writer(fd)
-        writer.writerow(['time', 'step', 'reward'])
+        writer.writerow(['time', 'step', 'reward', 'eps', 'action', 'loss', 'td_error'])
 
         for r in values:
             writer.writerow(list(r))
@@ -55,5 +71,5 @@ if __name__ == '__main__':
             for s, ds, fs in os.walk(f'tb_logs/{dir}'):
                 paths.append((dir, fs[0]))
 
-    pool = multiprocessing.Pool(int(multiprocessing.cpu_count() / 2))
+    pool = multiprocessing.Pool(int(multiprocessing.cpu_count() / 4))
     pool.map(store, paths)
