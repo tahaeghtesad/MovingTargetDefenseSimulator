@@ -95,6 +95,7 @@ if __name__ == '__main__':
         for dir in dirs:
             for s, ds, fs in os.walk(f'tb_logs/{dir}'):
                 paths.append((dir, fs[0]))
+        break
 
     pool = multiprocessing.Pool(int(multiprocessing.cpu_count() / 4))
     pool.map(store, paths)

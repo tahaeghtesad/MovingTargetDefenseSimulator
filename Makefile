@@ -2,6 +2,8 @@ default:
 		echo 'You once ruined all my experiments!' | cowsay
 
 clean:
+		printf 'Are you sure you wanna clean everything?\nI will wait for 15 seconds\nin case you changed your mind\n' | cowsay
+		sleep 15
 		rm slurm*
 		rm -r tb_logs/
 		rm -r logs/
