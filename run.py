@@ -24,12 +24,12 @@ for ep in episodes:
                 for layer in layers:
                     runs.append(('attacker', ep, opponent, ef, ev, layer))
 
-for ep in episodes:
-    for opponent in defender_opponents:
-        for ef in efs:
-            for ev in evs:
-                for layer in layers:
-                    runs.append(('defender', ep, opponent, ef, ev, layer))
+# for ep in episodes:
+#     for opponent in defender_opponents:
+#         for ef in efs:
+#             for ev in evs:
+#                 for layer in layers:
+#                     runs.append(('defender', ep, opponent, ef, ev, layer))
 
 for r in runs:
     run(r)
