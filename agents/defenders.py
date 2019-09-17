@@ -26,7 +26,7 @@ class UniformDefender(BaseDefender):
 
         targets = []
         for i in range(self.m):
-            if obs[i * 5 + 0] == 1:
+            if obs[i * 5 + 0] == 1:  # and obs[i * 5 + 2] > 0:
                 targets.append(i)
 
         return (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
@@ -102,7 +102,7 @@ class MaxProbeDefender(BaseDefender):
         if self.counter % self.p:
             return -1 + 1
 
-        max = -1
+        max = 1
         index = -1
         max_count = 0
 

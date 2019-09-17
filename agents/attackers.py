@@ -19,7 +19,7 @@ class UniformAttacker(BaseAttacker):
     def predict(self, obs):
 
         targets = []
-        for i in range(self.m):
+        for i in range(self.m):  # 0 -> up / 1 -> time to up / 2 -> progress / 3 -> control
             if obs[i * 4 + 3] == 0 and obs[i * 4 + 0] == 1:
                 targets.append(i)
 
@@ -39,7 +39,7 @@ class MaxProbeAttacker(BaseAttacker):
         if self.counter % self.p:
             return -1 + 1
 
-        max = -1
+        max = 0
         index = -1
         max_count = 0
 
@@ -76,8 +76,8 @@ class ControlThresholdAttacker(BaseAttacker):
         for i in range(self.m):  # 0 -> up / 1 -> time to up / 2 -> progress / 3 -> control
             # if self.servers[i]['control'] == 0:
             #     if self.servers[i]['status'] == -1:
-            if obs[i * 4 + 3] == 1:
-                if obs[i * 4 + 0] == 0:
+            if obs[i * 4 + 3] == 0:
+                if obs[i * 4 + 0] == 1:
                     targets.append(i)
                 defender_control_or_down += 1
 
