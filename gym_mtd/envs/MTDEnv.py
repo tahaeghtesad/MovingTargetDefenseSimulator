@@ -271,7 +271,7 @@ class MovingTargetDefenceEnv(gym.Env):
 
 class MTDAttackerEnv(MovingTargetDefenceEnv):
 
-    def __init__(self, defender, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0,
+    def __init__(self, defender, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=2, setting=1,
                  ca=.2):
         super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca)
 
@@ -291,7 +291,7 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
 
     def step(self, action):
         attacker_action = self.attacker_processor.process_action(action)
-        defender_action = self.defender.predict(self.last_defender_obs)
+        defender_action = self.defender_processor.process_action(self.defender.predict(self.last_defender_obs))
         observation, reward, done, info = super().step((attacker_action, defender_action))
 
         self.last_defender_obs, _, _, _ = self.defender_processor.process_step(observation, reward, done, info)
@@ -308,7 +308,7 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
 
 class MTDDefenderEnv(MovingTargetDefenceEnv):
 
-    def __init__(self, attacker, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=0, setting=0,
+    def __init__(self, attacker, m=10, downtime=7, alpha=.05, time_limit=1000, probe_detection=0., utenv=2, setting=1,
                  ca=.2):
         super().__init__(m, downtime, alpha, time_limit, probe_detection, utenv, setting, ca)
 
@@ -327,7 +327,7 @@ class MTDDefenderEnv(MovingTargetDefenceEnv):
         self.last_attacker_obs = None
 
     def step(self, action):
-        attacker_action = self.attacker.predict(self.last_attacker_obs)
+        attacker_action = self.attacker_processor.process_action(self.attacker.predict(self.last_attacker_obs))
         defender_action = self.defender_processor.process_action(action)
         observation, reward, done, info = super().step((attacker_action, defender_action))
 
