@@ -39,20 +39,16 @@ class PCPDefender(BaseDefender):
         self.p = p
         self.pi = pi
 
-        self.counter = 0
-
     def predict(self, obs):
-        self.counter += 1
-
-        target = -1
+        targets = []
         for i in range(self.m):
-            if obs[i * 5 + 2] >= self.pi:
-                target = i
+            if obs[i * 5 + 2] >= self.pi:  # 0 ~> up, 1 ~> time_to_up, 2 ~> observed_progress, 3 ~> time_since_last_probe, 4 ~> time_since_last_reimage
+                targets.append(i)
 
             if 1 <= obs[i * 5 + 2] and obs[i * 5 + 3] > self.p:
-                target = i
+                targets.append(i)
 
-        return target + 1
+        return (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
 
 
 class ControlThresholdDefender(BaseDefender):

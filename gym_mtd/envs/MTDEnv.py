@@ -81,9 +81,9 @@ class MovingTargetDefenceEnv(gym.Env):
 
     @staticmethod
     def get_params(env,
-                   setting):  # env = [1: control/avail 2: control/config 3:disrupt/avail 4:disrupt/confid] - setting = [0:low 1:major 2:high] #5: my setting!
+                   setting):  # env = [0: control/avail 1: control/config 2:disrupt/avail 3:disrupt/confid] - setting = [0:low 1:major 2:high]
         utenv = [(1, 1), (1, 0), (0, 1), (0, 0)]
-        setenv = [(.2, .2, .2, .2), (.5, .5, .5, .5), (.8, .8, .8, .8), (.2, .2, .8, .8)]
+        setenv = [(.2, .2, .2, .2), (.5, .5, .5, .5), (.8, .8, .8, .8)]
         return utenv[env], setenv[setting]
 
     def utility(self, nc, nd, w, tth_1, tth_2):
