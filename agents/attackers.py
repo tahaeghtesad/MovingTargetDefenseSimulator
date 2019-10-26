@@ -58,7 +58,7 @@ class MaxProbeAttacker(BaseAttacker):
 
 
 class ControlThresholdAttacker(BaseAttacker):
-    def __init__(self, tau=.6, p=1, m=10, downtime=7):
+    def __init__(self, tau=0.5, p=1, m=10, downtime=7):
         super().__init__(m, downtime)
         self.tau = tau
         self.p = p

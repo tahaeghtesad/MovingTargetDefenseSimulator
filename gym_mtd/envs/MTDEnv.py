@@ -14,7 +14,7 @@ from util.DefenderProcessor import DefenderProcessor
 
 class Party(Enum):
     Attacker = 1
-    Defender = 2
+    Defender = 0
 
 
 class MovingTargetDefenceEnv(gym.Env):
@@ -74,6 +74,10 @@ class MovingTargetDefenceEnv(gym.Env):
         self.defender_last_action = -1
 
         self.reward_range = (0, 1)
+
+        self.nca = 0
+        self.ncd = 0
+        self.nd = 0
 
     @staticmethod
     def sigmoid(x, tth, tsl=5):
@@ -165,14 +169,14 @@ class MovingTargetDefenceEnv(gym.Env):
         self.reimage(def_r)
 
         ### Calculate utility
-        nca = sum(server['control'] == Party.Attacker for server in self.servers)
-        ncd = sum(server['control'] == Party.Defender and server['status'] == -1 for server in self.servers)
-        nd = sum(server['status'] > -1 for server in self.servers)
+        self.nca = sum(server['control'] == Party.Attacker for server in self.servers)
+        self.ncd = sum(server['control'] == Party.Defender and server['status'] == -1 for server in self.servers)
+        self.nd = sum(server['status'] > -1 for server in self.servers)
 
-        assert nca + ncd + nd == self.m, "N_ca, N_cd, or N_d is calculated incorrectly!"
+        assert self.nca + self.ncd + self.nd == self.m, "N_ca, N_cd, or N_d is calculated incorrectly!"
 
-        au = self.utility(nca, nd, self.utenv[0], self.setting[0], self.setting[1]) + self.last_attack_cost
-        du = self.utility(ncd, nd, self.utenv[1], self.setting[2], self.setting[3])
+        au = self.utility(self.nca, self.nd, self.utenv[0], self.setting[0], self.setting[1]) + self.last_attack_cost
+        du = self.utility(self.ncd, self.nd, self.utenv[1], self.setting[2], self.setting[3])
 
         self.time += 1
 

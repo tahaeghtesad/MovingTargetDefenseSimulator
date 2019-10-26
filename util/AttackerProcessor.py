@@ -55,13 +55,6 @@ class AttackerProcessor:
         if not -1 <= last_reimage < self.m:
             raise Exception('Out of range server.')
 
-        if last_reimage != -1:
-            self.servers[last_reimage] = {
-                'status': time,
-                'control': 0,
-                'progress': 0
-            }
-
         if action != -1:
             if success == 1:
                 self.servers[action]['control'] = 1
@@ -70,15 +63,22 @@ class AttackerProcessor:
                 self.logger.debug('Probe was successful.')
             elif success == 0:
                 self.servers[action]['progress'] += 1
-                self.servers[action]['control'] = 0
+                self.servers[action]['control'] = 0  # Why is it here?
                 self.servers[action]['status'] = -1
                 self.logger.debug('Probe was unsuccessful.')
             elif success == -1:
                 self.servers[action]['status'] = self.servers[action]['status'] if self.servers[action][
                                                                                        'status'] != -1 else time
                 self.servers[action]['progress'] = 0
-                self.servers[action]['control'] = 0
+                self.servers[action]['control'] = 0  # Why is it here?
                 self.logger.debug('Server was down.')
+
+        if last_reimage != -1:
+            self.servers[last_reimage] = {
+                'status': time,
+                'control': 0,
+                'progress': 0
+            }
 
 
         ### Converting state

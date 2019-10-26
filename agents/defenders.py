@@ -52,7 +52,7 @@ class PCPDefender(BaseDefender):
 
 
 class ControlThresholdDefender(BaseDefender):
-    def __init__(self, tau=.4, p=4, alpha=.05, m=10):
+    def __init__(self, tau=0.8, p=4, alpha=.05, m=10):
         super().__init__(m)
         self.tau = tau
         self.alpha = alpha
@@ -103,12 +103,13 @@ class MaxProbeDefender(BaseDefender):
         max_count = 0
 
         for i in range(self.m):  # 0 -> up / 1 -> time to up / 2 -> progress / 3 -> control
+            # up, time_to_up, observed_progress, time_since_last_probe, time_since_last_reimage
             if obs[i * 5 + 0] == 1:
                 if obs[i * 5 + 2] == max:
                     max_count += 1
                     if random.random() < 1 / max_count:
                         index = i
-                if obs[i * 4 + 2] > max:
+                if obs[i * 5 + 2] > max:
                     index = i
                     max = obs[i * 5 + 2]
                     max_count = 1
