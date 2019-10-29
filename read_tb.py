@@ -6,7 +6,7 @@ from datetime import datetime
 import tensorflow as tf
 
 
-def get_values(path, weight):
+def get_values(path, weight, sample_no):
 
     start = datetime.now()
     print(f'Beginning collection for {path}')
@@ -53,7 +53,7 @@ def get_values(path, weight):
 
     samples = {}
     for k in values.keys():
-        samples[k] = values[k]  #random.sample(values[k], sample_no)
+        samples[k] = random.sample(values[k], sample_no)
 
     print(f'Done collection for {path}. It took: {datetime.now() - start}')
 
@@ -62,8 +62,9 @@ def get_values(path, weight):
 
 def store(params):
     dir, name = params
+    sample_no = 10000
     try:
-        values = get_values(f'tb_logs/{dir}/{name}', 0.99)
+        values = get_values(f'tb_logs/{dir}/{name}', 0.99, sample_no)
 
         with open(f'reward_plots/{dir}.csv', 'w') as fd:
             writer = csv.writer(fd)
