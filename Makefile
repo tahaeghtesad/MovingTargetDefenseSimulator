@@ -27,4 +27,4 @@ watch:
 		watch -n 10 "squeue -l | grep MTD | sort -k1 -n"
 
 collect:
-		sbatch srun.collect.sh
+		python run_collector.py
