@@ -4,8 +4,8 @@ import subprocess
 
 def run(params):
     dir, name = params
-    print(f"Running... {['sbatch', 'run.srun.sh', dir, name]}")
-    subprocess.run(['sbatch', 'run.srun.sh', dir, name])
+    print(f"Running... {['sbatch', 'collect.srun.sh', dir, name]}")
+    subprocess.run(['sbatch', 'collect.srun.sh', dir, name])
     return 0
 
 
