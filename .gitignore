@@ -227,6 +227,9 @@ pip-selfcheck.json
 
 *weights*.h5
 *weights.pkl
-*logs/
+logs/
 weights
-*_plots
+reward_plots
+tb_logs/
+*.png
+*.jpg
