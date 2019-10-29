@@ -32,7 +32,7 @@ plot_data = {
 }
 
 labels = []
-
+avg = []
 
 for subdir, d, f in os.walk('reward_plots'):
     random_samples = f  #random.sample(f, 20)
@@ -53,6 +53,8 @@ for subdir, d, f in os.walk('reward_plots'):
                     [y[2] for y in data]))
                 plot_data['rewards']['x'].append([x[0] for x in s])
                 plot_data['rewards']['y'].append([y[1] for y in s])
+
+                avg.append(sum([y[1] for y in s])/len([y[1] for y in s]))
 
                 s = sorted(zip(
                     [x[4] for x in data],
@@ -82,18 +84,18 @@ for subdir, d, f in os.walk('reward_plots'):
                 plot_data['td_error']['y'].append([y[1] for y in s])
     break
 
+selected_reward = sorted(avg)[-10]
+
 
 def add_plot(count, order, data, title):
     plt.subplot(count, 1, order)
     plt.title(title)
     for i in range(len(data['x'])):
-        if title == 'Rewards' or title == 'Epsilon':
-            plt.plot(data['x'][i], data['y'][i], label=f'{extract(labels[i])}')
-        else:
-            plt.plot(data['x'][i], smooth(data['y'][i], 0.99), label=f'{extract(labels[i])}')
-    # if title == 'Rewards':
-        # plt.plot([0, 500000], [0.9226, 0.9226], label='PCPDefener\'s reward.')
-        # plt.axhline(0.9226, 0, 500000, label="PCPDefener's reward.")
+        if avg[i] >= selected_reward:
+            if title == 'Rewards' or title == 'Epsilon':
+                plt.plot(data['x'][i], data['y'][i], label=f'{extract(labels[i])}')
+            else:
+                plt.plot(data['x'][i], smooth(data['y'][i], 0.99), label=f'{extract(labels[i])}')
 
     plt.legend(loc='lower right')
     plt.grid()
