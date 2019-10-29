@@ -66,7 +66,6 @@ weight_path = 'weights.pkl'
 
 def get_params_dqn(dqn_model: stable_baselines.DQN):
     return {
-        "checkpoint_path": dqn_model.checkpoint_path,
         "param_noise": dqn_model.param_noise,
         "learning_starts": dqn_model.learning_starts,
         "train_freq": dqn_model.train_freq,
@@ -74,7 +73,6 @@ def get_params_dqn(dqn_model: stable_baselines.DQN):
         "prioritized_replay_eps": dqn_model.prioritized_replay_eps,
         "batch_size": dqn_model.batch_size,
         "target_network_update_freq": dqn_model.target_network_update_freq,
-        "checkpoint_freq": dqn_model.checkpoint_freq,
         "prioritized_replay_alpha": dqn_model.prioritized_replay_alpha,
         "prioritized_replay_beta0": dqn_model.prioritized_replay_beta0,
         "prioritized_replay_beta_iters": dqn_model.prioritized_replay_beta_iters,
