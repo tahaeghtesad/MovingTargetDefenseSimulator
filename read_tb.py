@@ -53,7 +53,7 @@ def get_values(path, weight, sample_no):
 
     samples = {}
     for k in values.keys():
-        samples[k] = values[k]#random.sample(values[k], sample_no)
+        samples[k] = random.sample(values[k], sample_no)
 
     print(f'Done collection for {path}. It took: {datetime.now() - start}')
 
