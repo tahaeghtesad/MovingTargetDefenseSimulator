@@ -35,7 +35,7 @@ labels = []
 
 
 for subdir, d, f in os.walk('reward_plots'):
-    random_samples = random.sample(f)
+    random_samples = f  #random.sample(f, 20)
     for n in tqdm(random_samples):
         if 'attacker' in n:
             labels.append(n)
@@ -91,9 +91,9 @@ def add_plot(count, order, data, title):
             plt.plot(data['x'][i], data['y'][i], label=f'{extract(labels[i])}')
         else:
             plt.plot(data['x'][i], smooth(data['y'][i], 0.99), label=f'{extract(labels[i])}')
-    if title == 'Rewards':
+    # if title == 'Rewards':
         # plt.plot([0, 500000], [0.9226, 0.9226], label='PCPDefener\'s reward.')
-        plt.axhline(0.9226, 0, 500000, label="PCPDefener's reward.")
+        # plt.axhline(0.9226, 0, 500000, label="PCPDefener's reward.")
 
     plt.legend(loc='lower right')
     plt.grid()

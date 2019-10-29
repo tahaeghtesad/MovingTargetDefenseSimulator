@@ -1,6 +1,6 @@
 import random
 import csv
-import multiprocessing
+import sys
 import os
 from datetime import datetime
 import tensorflow as tf
@@ -87,15 +87,7 @@ def store(params):
     return None
 
 
-if __name__ == '__main__':
+dir = sys.argv[1]
+name = sys.argv[2]
 
-    paths = []
-
-    for subdir, dirs, files in os.walk('tb_logs'):
-        for dir in dirs:
-            for s, ds, fs in os.walk(f'tb_logs/{dir}'):
-                paths.append((dir, fs[0]))
-        break
-
-    pool = multiprocessing.Pool(int(multiprocessing.cpu_count() / 4))
-    pool.map(store, paths)
+store((dir, name))
