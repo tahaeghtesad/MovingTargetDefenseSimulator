@@ -38,6 +38,7 @@ opponent = getattr(importlib.import_module('agents.defenders'), sys.argv[3]) if 
 ef = float(sys.argv[4])
 ev = float(sys.argv[5])
 layers = [] if sys.argv[6] == 'x' else [int(c) for c in sys.argv[6].split(',')]
+gamma = float(sys.argv[7])
 
 print(f'Training Mode: {"Attacker" if training_mode else "Defender"}')
 
@@ -135,6 +136,7 @@ if training_mode:
         env=DummyVecEnv([lambda: env]),
         exploration_fraction=ef,
         exploration_final_eps=ev,
+        gamma=gamma,
         verbose=2,
         tensorboard_log='tb_logs',
         full_tensorboard_log=True
@@ -148,6 +150,7 @@ else:
         env=DummyVecEnv([lambda: env]),
         exploration_fraction=ef,
         exploration_final_eps=ev,
+        gamma=gamma,
         verbose=2,
         tensorboard_log='tb_logs',
         full_tensorboard_log=True
