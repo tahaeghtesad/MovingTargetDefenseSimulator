@@ -4,9 +4,10 @@ import subprocess
 def run(params):
     player, episodes, opponent, ef, ev, layers, gamma = params
     print(f"Running... {['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma]}")
-    completed = subprocess.run(['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma], capture_output=True)
-    job_id = int(completed.stdout.decode("ascii").split('\n')[1].split(' ')[-1])
-    return job_id
+    # completed = \
+    subprocess.run(['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma])
+    # job_id = int(completed.stdout.decode("ascii").split('\n')[1].split(' ')[-1])
+    # return job_id
 
 
 episodes = ['100', '200']
@@ -36,8 +37,9 @@ for ep in episodes:
 #                         runs.append(('defender', ep, opponent, ef, ev, layer, gamma))
 
 for r in runs:
-    id = run(r)
-    print(f'Job submitted with id: {id}')
+    # id = run(r)
+    # print(f'Job submitted with id: {id}')
+    run(r)
 
 # p = multiprocessing.Pool(int(multiprocessing.cpu_count()/2))
 #
