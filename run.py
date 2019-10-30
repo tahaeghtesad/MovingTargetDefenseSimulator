@@ -9,11 +9,11 @@ def run(params):
     return job_id
 
 
-episodes = ['100', '200', '500']
-efs = ['0.2']  # 0.2
-evs = ['0.02']  # 0.02
-layers = ['x', '25,25', '256']  # 25, 25
-gammas = ['.99', '0.97', '0.999']  # 0.99
+episodes = ['100', '200']
+efs = ['0.1', '0.2', '0.3']  # 0.2
+evs = ['0.01', '0.02', '0.1', '0.05']  # 0.02
+layers = ['x', '25', '25,25']  # 25, 25
+gammas = ['0.9', '0.95', '0.97', '.999']  # 0.99
 
 attacker_opponents = ['UniformDefender']
 defender_opponents = ['UniformAttacker']
@@ -27,13 +27,13 @@ for ep in episodes:
                     for gamma in gammas:
                         runs.append(('attacker', ep, opponent, ef, ev, layer, gamma))
 
-for ep in episodes:
-    for opponent in defender_opponents:
-        for ef in efs:
-            for ev in evs:
-                for layer in layers:
-                    for gamma in gammas:
-                        runs.append(('defender', ep, opponent, ef, ev, layer, gamma))
+# for ep in episodes:
+#     for opponent in defender_opponents:
+#         for ef in efs:
+#             for ev in evs:
+#                 for layer in layers:
+#                     for gamma in gammas:
+#                         runs.append(('defender', ep, opponent, ef, ev, layer, gamma))
 
 for r in runs:
     id = run(r)

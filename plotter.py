@@ -12,12 +12,12 @@ def extract(name: str):
 
         for data in reader:
             if name.split('_')[2] in data['\ufeffname']:
-                return f"{data['episodes']}-{data['layers']}-{data['exploration_fraction']}-{data['exploration_final']}"
+                return f"{name.split('_')[2]}-{data['episodes']}-{data['layers']}-{data['gamma']}"
 
 
 def smooth(series, weight):
-    ret = [series[0]]
-    smoothed = series[0]
+    ret = [sum(series[0:200])/200]
+    smoothed = sum(series[0:200])/200
     for i in range(1, len(series)):
         smoothed = smoothed * weight + (1-weight) * series[i]
         ret.append(smoothed)
@@ -84,7 +84,7 @@ for subdir, d, f in os.walk('reward_plots'):
                 plot_data['td_error']['y'].append([y[1] for y in s])
     break
 
-selected_reward = sorted(avg)[-10]
+selected_reward = sorted(avg)[-5]
 
 
 def add_plot(count, order, data, title):
@@ -92,8 +92,10 @@ def add_plot(count, order, data, title):
     plt.title(title)
     for i in range(len(data['x'])):
         if avg[i] >= selected_reward:
-            if title == 'Rewards' or title == 'Epsilon':
+            if title == 'Epsilon':
                 plt.plot(data['x'][i], data['y'][i], label=f'{extract(labels[i])}')
+            elif title == 'Rewards':
+                plt.plot(data['x'][i], smooth(data['y'][i], 0.9), label=f'{extract(labels[i])}')
             else:
                 plt.plot(data['x'][i], smooth(data['y'][i], 0.99), label=f'{extract(labels[i])}')
 
@@ -108,5 +110,5 @@ add_plot(5, 3, plot_data['action'], 'Action')
 add_plot(5, 4, plot_data['loss'], 'loss')
 add_plot(5, 5, plot_data['td_error'], 'td_error')
 
-plt.savefig('plot.png', dpi=300)
+plt.savefig('plot_attacker.png', dpi=300)
 

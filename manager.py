@@ -12,8 +12,20 @@ steps = 1000
 episodes = 1
 m = 10
 
+plt.figure(figsize=(16, 12))
 
-def add_plots(attacker, defender, which, smoothing_weight=.9):
+
+def smooth(series, weight):
+    ret = [sum(series[0:200])/200]
+    smoothed = sum(series[0:200])/200
+    for i in range(1, len(series)):
+        smoothed = smoothed * weight + (1-weight) * series[i]
+        ret.append(smoothed)
+    return ret
+
+
+def add_plots(attacker, defender, which, smoothing_weight=(1-50/(episodes * steps))):
+    global smooth
     env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2)
 
     ap = AttackerProcessor(m=m)
@@ -55,44 +67,33 @@ def add_plots(attacker, defender, which, smoothing_weight=.9):
 
     if which:
         plt.plot([0, steps * episodes], [au/steps/episodes, au/steps/episodes], alpha=0.5,
-                 label=f'{attacker.__class__.__name__} Average Reward')
+                 label=f'{attacker.__class__.__name__} Average Reward', linewidth=2.0)
         rewards = sorted(random.sample(aul, 500), key=lambda i: i[0])
         plt.plot([c[0] for c in rewards], [c[1] for c in rewards], alpha=0.3, linestyle='-', label=f'{attacker.__class__.__name__} Reward')
-
-        smoothed = []
-        smooth = 0
-        for i in range(len(aul)):
-            smooth = smoothing_weight * smooth + (1-smoothing_weight) * aul[i][1]
-            smoothed.append(smooth)
-
-        plt.plot([c[0] for c in aul], smoothed, label=f'{attacker.__class__.__name__} Smoothed Reward')
+        plt.plot([c[0] for c in aul], smooth([c[1] for c in aul], smoothing_weight), label=f'{attacker.__class__.__name__} Smoothed Reward', linewidth=3.0)
 
     else:
         plt.plot([0, steps * episodes], [du / steps / episodes, du / steps / episodes], alpha=0.5,
-                 label=f'{defender.__class__.__name__} Average Reward')
+                 label=f'{defender.__class__.__name__} Average Reward', linewidth=2.0)
         # rewards = sorted(random.sample(dul, 500), key=lambda i: i[0])
         rewards = dul
         plt.plot([c[0] for c in rewards], [c[1] for c in rewards], alpha=0.3, linestyle='-', label=f'{defender.__class__.__name__} Reward')
 
-        smoothed = []
-        smooth = 0
-        for i in range(len(dul)):
-            smooth = smoothing_weight * smooth + (1-smoothing_weight) * dul[i][1]
-            smoothed.append(smooth)
-
-        plt.plot([c[0] for c in dul], smoothed, label=f'{defender.__class__.__name__} Smoothed Reward')
+        plt.plot([c[0] for c in dul], smooth([c[1] for c in dul], smoothing_weight), label=f'{defender.__class__.__name__} Smoothed Reward', linewidth=3.0)
 
     plt.legend()
+    return au / steps / episodes, du / steps / episodes
 
 # attacker = UniformAttacker(m=m)
 # attacker = DQNWrapper.load('weights/attacker_63be0de9_weights.pkl')
 # defender = UniformDefender(m=m)
 
-
+add_plots(UniformAttacker(), DQNWrapper.load('weights/defender_61e4024a_weights.pkl'), 0)
 add_plots(UniformAttacker(), UniformDefender(), 0)
-# add_plots(UniformAttacker(), DQNWrapper.load('weights/defender_7d1cc244_weights.pkl'), 0)
-# add_plots(DQNWrapper.load('weights/attacker_63be0de9_weights_good.pkl'), UniformDefender(), 1)
+add_plots(UniformAttacker(), PCPDefender(), 0)
+# add_plots(DQNWrapper.load('weights/attacker_f0419153_weights.pkl'), UniformDefender(), 1)
 # add_plots(UniformAttacker(), UniformDefender(), 1)
-
-plt.savefig('defender_reward_plot.png', dpi=800)
+#
+plt.savefig('defender_reward_plot.png', dpi=300)
+# plt.savefig('attacker_reward_plot.png', dpi=300)
 # plt.show()
