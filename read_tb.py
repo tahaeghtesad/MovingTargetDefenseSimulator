@@ -2,6 +2,7 @@ import random
 import csv
 import sys
 import os
+import time
 from datetime import datetime
 import tensorflow as tf
 
@@ -91,3 +92,5 @@ dir = sys.argv[1]
 name = sys.argv[2]
 
 store((dir, name))
+
+time.sleep(60)
