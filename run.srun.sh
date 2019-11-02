@@ -2,7 +2,7 @@
 
 #SBATCH -J MTD
 #SBATCH -t 4:00:00
-#SBATCH -N 1 -n 28
+#SBATCH -N 1 -n 4
 #SBATCH --mem 16GB
 ##SBATCH -p gpu
 ##SBATCH --gres=gpu:1

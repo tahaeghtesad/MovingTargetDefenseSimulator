@@ -10,7 +10,7 @@ def run(params):
     # return job_id
 
 
-episodes = ['500', '1000']
+episodes = ['500']
 efs = ['0.2']  # 0.2
 evs = ['0.02']  # 0.02
 layers = ['x', '64', '64,64']  # 25, 25
