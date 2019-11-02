@@ -2,7 +2,7 @@ import subprocess
 
 
 def run(params):
-    player, episodes, opponent, ef, ev, layers, gamma = params
+    player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization = params
     print(f"Running... {['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization]}")
     # completed = \
     subprocess.run(['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization])
