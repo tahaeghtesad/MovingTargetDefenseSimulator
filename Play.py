@@ -10,6 +10,7 @@ import logging
 import stable_baselines
 import tensorflow as tf
 import importlib
+from datetime import datetime
 import numpy as np
 from stable_baselines.deepq.policies import FeedForwardPolicy
 from stable_baselines.common.vec_env import *
@@ -224,6 +225,7 @@ def callback(locals_, globals_):
     n_steps += 1
     return True
 
+start = datetime.now()
 
 try:
     rootLogger.info(f'Begin training for {episodes} episodes/{steps} steps')
@@ -251,7 +253,7 @@ except Exception:
     traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stderr)
 
 finally:
-    csv_row += ['', best_mean_reward]
+    csv_row += ['', best_mean_reward, datetime.now()-start]
     with open('reports.csv', 'a') as fd:
         writer = csv.writer(fd)
         writer.writerow(csv_row)
