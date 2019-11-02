@@ -10,7 +10,7 @@ import logging
 import stable_baselines
 import tensorflow as tf
 import importlib
-from stable_baselines.deepq.policies import *
+from stable_baselines.deepq.policies import FeedForwardPolicy
 from stable_baselines.common.vec_env import *
 
 
@@ -39,6 +39,10 @@ ef = float(sys.argv[4])
 ev = float(sys.argv[5])
 layers = [] if sys.argv[6] == 'x' else [int(c) for c in sys.argv[6].split(',')]
 gamma = float(sys.argv[7])
+dueling = bool(sys.argv[8])
+double = bool(sys.argv[9])
+prioritized_replay = bool(sys.argv[10])
+normalization = bool(sys.argv[11])
 
 print(f'Training Mode: {"Attacker" if training_mode else "Defender"}')
 
@@ -46,7 +50,7 @@ csv_row = [f'log_{str(id).replace("-","_")}.log', 'Attacker' if training_mode el
 
 debug = False
 m = 10
-steps = 5000
+steps = 1000
 # episodes = 100
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
@@ -87,45 +91,52 @@ def get_params_dqn(dqn_model: stable_baselines.DQN):
         "policy": dqn_model.policy,
         "n_envs": dqn_model.n_envs,
         "_vectorize_action": dqn_model._vectorize_action,
-        "policy_kwargs": dqn_model.policy_kwargs
+        "policy_kwargs": dqn_model.policy_kwargs,
+        "double_q": dqn_model.double_q
     }
 
 attacker_policy = {
     'activation': tf.nn.tanh,
     'layers': layers,
-    'dueling': False
+    'dueling': dueling,
+    'normalization': normalization
 }
 
 defender_policy = {
     'activation': tf.nn.tanh,
     'layers': layers,
-    'dueling': False
+    'dueling': dueling,
+    'normalization': normalization
 }
 
 if training_mode:
-    csv_row += [attacker_policy['layers'], attacker_policy['activation'], attacker_policy['dueling'], '']
+    csv_row += [attacker_policy['layers'], attacker_policy['activation'], attacker_policy['dueling'], attacker_policy['normalization'], '']
 else:
-    csv_row += [defender_policy['layers'], defender_policy['activation'], defender_policy['dueling'], '']
+    csv_row += [defender_policy['layers'], defender_policy['activation'], defender_policy['dueling'], defender_policy['normalization'], '']
 
 
-class CustomAttackerPolicy(MlpPolicy):
+class CustomAttackerPolicy(FeedForwardPolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs,
                          act_fun=attacker_policy['activation'],
                          layers=attacker_policy['layers'],
                          dueling=attacker_policy['dueling'],
+                         layer_norm=attacker_policy['normalization'],
+                         feature_extraction="mlp",
                          )
 
         rootLogger.info(attacker_policy)
 
 
-class CustomDefenderPolicy(MlpPolicy):
+class CustomDefenderPolicy(FeedForwardPolicy):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs,
                          act_fun=defender_policy['activation'],
                          layers=defender_policy['layers'],
                          dueling=defender_policy['dueling'],
+                         layer_norm=defender_policy['normalization'],
+                         feature_extraction="mlp"
                          )
 
         rootLogger.info(defender_policy)
@@ -137,6 +148,8 @@ if training_mode:
         exploration_fraction=ef,
         exploration_final_eps=ev,
         gamma=gamma,
+        double_q=double,
+        prioritized_replay=prioritized_replay,
         verbose=2,
         tensorboard_log='tb_logs',
         full_tensorboard_log=True
@@ -146,11 +159,13 @@ if training_mode:
                     f'{dqn_params}')
 else:
     defender_model = stable_baselines.DQN(
-        policy=CustomDefenderPolicy,
+        policy='LnMlpPolicy', #CustomAttackerPolicy,
         env=DummyVecEnv([lambda: env]),
         exploration_fraction=ef,
         exploration_final_eps=ev,
         gamma=gamma,
+        double_q=double,
+        prioritized_replay=prioritized_replay,
         verbose=2,
         tensorboard_log='tb_logs',
         full_tensorboard_log=True
@@ -159,7 +174,7 @@ else:
     rootLogger.info(f'Initializing Defense Learner:\n' +
                     f'{dqn_params}')
 
-csv_row += [dqn_params['prioritized_replay'], dqn_params['exploration_final_eps'],
+csv_row += [dqn_params['prioritized_replay'], dqn_params['double_q'], dqn_params['exploration_final_eps'],
             dqn_params['exploration_fraction'], '', dqn_params['learning_rate'], dqn_params['gamma']]
 
 # if os.path.isfile(f'defender_{weight_path}') and os.path.isfile(f'attacker_{weight_path}'):

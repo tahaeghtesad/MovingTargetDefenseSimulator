@@ -3,38 +3,40 @@ import subprocess
 
 def run(params):
     player, episodes, opponent, ef, ev, layers, gamma = params
-    print(f"Running... {['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma]}")
+    print(f"Running... {['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization]}")
     # completed = \
-    subprocess.run(['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma])
+    subprocess.run(['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization])
     # job_id = int(completed.stdout.decode("ascii").split('\n')[1].split(' ')[-1])
     # return job_id
 
 
-episodes = ['100', '200']
-efs = ['0.1', '0.2', '0.3']  # 0.2
-evs = ['0.01', '0.02', '0.1', '0.05']  # 0.02
-layers = ['x', '25', '25,25']  # 25, 25
-gammas = ['0.9', '0.95', '0.97', '.999']  # 0.99
+episodes = ['500', '1000']
+efs = ['0.2']  # 0.2
+evs = ['0.02']  # 0.02
+layers = ['x', '64', '64,64']  # 25, 25
+gammas = ['0.99']  # 0.99
+duelings = ['True', 'False']
+doubles = ['True', 'False']
+prioritized_replays = ['True', 'False']
+normalizations = ['True', 'False']
 
 attacker_opponents = ['UniformDefender']
 defender_opponents = ['UniformAttacker']
 
 runs = []
 for ep in episodes:
-    for opponent in attacker_opponents:
-        for ef in efs:
-            for ev in evs:
-                for layer in layers:
-                    for gamma in gammas:
-                        runs.append(('attacker', ep, opponent, ef, ev, layer, gamma))
-
-# for ep in episodes:
-#     for opponent in defender_opponents:
-#         for ef in efs:
-#             for ev in evs:
-#                 for layer in layers:
-#                     for gamma in gammas:
-#                         runs.append(('defender', ep, opponent, ef, ev, layer, gamma))
+    for ef in efs:
+        for ev in evs:
+            for layer in layers:
+                for gamma in gammas:
+                    for dueling in duelings:
+                        for double in doubles:
+                            for prioritized_replay in prioritized_replays:
+                                for normalization in normalizations:
+                                    for opponent in attacker_opponents:
+                                        runs.append(('attacker', ep, opponent, ef, ev, layer, gamma, dueling, double, prioritized_replay, normalization))
+                                    for opponent in defender_opponents:
+                                        runs.append(('defender', ep, opponent, ef, ev, layer, gamma, dueling, double, prioritized_replay, normalization))
 
 for r in runs:
     # id = run(r)
