@@ -10,9 +10,9 @@ import logging
 import stable_baselines
 import tensorflow as tf
 import importlib
+import numpy as np
 from stable_baselines.deepq.policies import FeedForwardPolicy
 from stable_baselines.common.vec_env import *
-
 
 from agents.defenders import *
 from agents.attackers import *
@@ -51,6 +51,7 @@ csv_row = [f'log_{str(id).replace("-","_")}.log', 'Attacker' if training_mode el
 debug = False
 m = 10
 steps = 1000
+best_mean_reward, n_steps = -np.inf, 0
 # episodes = 100
 
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
@@ -206,6 +207,25 @@ def callback(locals_, globals_):
             value=[tf.Summary.Value(tag='game/defender_reward', simple_value=locals_['info']['rewards']['def'])])
         locals_['writer'].add_summary(summary, self_.num_timesteps)
 
+    global n_steps, best_mean_reward, steps
+    # Print stats every 1000 calls
+    if (n_steps + 1) % steps == 0:
+        # Evaluate policy training performance
+            if len(locals_['episode_rewards'][-6:-1]) == 0:
+                mean_100ep_reward = -np.inf
+            else:
+                mean_100ep_reward = round(float(np.mean(locals_['episode_rewards'][-6:-1])), 1)
+
+            # New best model, you could save the agent here
+            if mean_100ep_reward > best_mean_reward:
+                best_mean_reward = mean_100ep_reward
+                # Example for saving best model
+                rootLogger.info(f"Saving new best model. Mean of last 5 episodes: {mean_100ep_reward}")
+                if training_mode:
+                    attacker_model.save(f'weights/attacker_{str(id).split("-")[0]}_{weight_path}')
+                else:
+                    defender_model.save(f'weights/defender_{str(id).split("-")[0]}_{weight_path}')
+    n_steps += 1
     return True
 
 
@@ -233,10 +253,3 @@ except KeyboardInterrupt:
 except Exception:
     exc_type, exc_value, exc_traceback = sys.exc_info()
     traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stderr)
-
-finally:
-    print('Saving weight file...')
-    if training_mode:
-        attacker_model.save(f'weights/attacker_{str(id).split("-")[0]}_{weight_path}')
-    else:
-        defender_model.save(f'weights/defender_{str(id).split("-")[0]}_{weight_path}')
