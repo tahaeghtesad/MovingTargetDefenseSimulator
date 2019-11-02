@@ -153,6 +153,8 @@ class MovingTargetDefenceEnv(gym.Env):
 
     def step(self, action: tuple):  # Action[0] is the attacker's move, Action[1] the defender's.
         assert self.time < self.time_limit
+        self.time += 1
+
         self.logger.debug(f'Round {self.time}/{self.time_limit}')
         ### Onlining servers
 
@@ -177,8 +179,6 @@ class MovingTargetDefenceEnv(gym.Env):
 
         au = self.utility(self.nca, self.nd, self.utenv[0], self.setting[0], self.setting[1]) + self.last_attack_cost
         du = self.utility(self.ncd, self.nd, self.utenv[1], self.setting[2], self.setting[3])
-
-        self.time += 1
 
         self.logger.debug(f'Received {au} utility.')
         done = self.time == self.time_limit
