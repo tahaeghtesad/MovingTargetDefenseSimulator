@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -J MTD
-#SBATCH -t 24:00:00
+#SBATCH -t 4:00:00
 #SBATCH -N 1 -n 16
 #SBATCH --mem 16GB
 ##SBATCH -p gpu
