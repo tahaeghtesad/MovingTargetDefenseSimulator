@@ -39,10 +39,10 @@ ef = float(sys.argv[4])
 ev = float(sys.argv[5])
 layers = [] if sys.argv[6] == 'x' else [int(c) for c in sys.argv[6].split(',')]
 gamma = float(sys.argv[7])
-dueling = bool(sys.argv[8])
-double = bool(sys.argv[9])
-prioritized_replay = bool(sys.argv[10])
-normalization = bool(sys.argv[11])
+dueling = sys.argv[8] == 'True'
+double = sys.argv[9] == 'True'
+prioritized_replay = sys.argv[10] == 'True'
+normalization = sys.argv[11] == 'True'
 
 print(f'Training Mode: {"Attacker" if training_mode else "Defender"}')
 
