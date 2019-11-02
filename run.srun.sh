@@ -15,4 +15,4 @@ module load Anaconda3/python-3.6
 
 cd /project/laszka/MovingTargetDefenseSimulator/
 
-python Play.py $1 $2 $3 $4 $5 $6 $7
+python Play.py "$@"
