@@ -1,1 +1,1 @@
-﻿name,mode,opponent,,episodes,m,delta,alpha,T,nu,utenv,setting,c_a,,layers,activation,dueling,layer_normalization,,prioritized_replay,double_q,exploration_final,exploration_fraction,,learning_rate,gamma
+﻿name,mode,opponent,,episodes,m,delta,alpha,T,nu,utenv,setting,c_a,,layers,activation,dueling,layer_normalization,,prioritized_replay,double_q,exploration_final,exploration_fraction,,learning_rate,gamma,,best_reward

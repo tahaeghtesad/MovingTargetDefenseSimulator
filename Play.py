@@ -183,10 +183,6 @@ csv_row += [dqn_params['prioritized_replay'], dqn_params['double_q'], dqn_params
 #     attacker_model.load(f'attacker_{weight_path}', attacker_env)
 #     defender_model.load(f'defender_{weight_path}', defender_env)
 
-with open('reports.csv', 'a') as fd:
-    writer = csv.writer(fd)
-    writer.writerow(csv_row)
-
 def callback(locals_, globals_):
     self_ = locals_['self']
 
@@ -253,3 +249,9 @@ except KeyboardInterrupt:
 except Exception:
     exc_type, exc_value, exc_traceback = sys.exc_info()
     traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stderr)
+
+finally:
+    csv_row += ['', best_mean_reward]
+    with open('reports.csv', 'a') as fd:
+        writer = csv.writer(fd)
+        writer.writerow(csv_row)
