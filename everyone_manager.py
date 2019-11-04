@@ -1,12 +1,12 @@
 import gym
 import gym_mtd
-from util.DQNWrapper import DQNWrapper
 from agents.attackers import *
 from agents.defenders import *
 from tqdm import tqdm
 from util.AttackerProcessor import AttackerProcessor
 from util.DefenderProcessor import DefenderProcessor
 import matplotlib.pyplot as plt
+import numpy as np
 
 steps = 1000
 episodes = 10
@@ -55,8 +55,21 @@ def play(attacker, defender):
     return au / steps / episodes, du / steps / episodes
 
 
+def is_equilibrium(arr, x, y) -> bool:
+    if np.max([p[1] for p in arr[x, :]]) == arr[x][y][1]:
+        if np.max([p[0] for p in arr[:, y]]) == arr[x][y][0]:
+            return True
+    return False
+
+
 attackers = [BaseAttacker, MaxProbeAttacker, UniformAttacker, ControlThresholdAttacker]
 defenders = [BaseDefender, ControlThresholdDefender, PCPDefender, UniformDefender, MaxProbeDefender]
+
+payoff_table = np.zeros((len(attackers), len(defenders), 2))
+
+for i, a in enumerate(attackers):
+    for j, d in enumerate(defenders):
+        payoff_table[i, j] = play(a(), d())
 
 
 print('\\backslashbox{Attackers}{Defenders} ', end='')
@@ -65,9 +78,12 @@ for d in defenders:
 print('\\\\\n\\hline')
 
 
-for a in attackers:
+for i, a in enumerate(attackers):
     print(f'{a.__name__.replace("Attacker", "")} ', end='')
-    for d in defenders:
-        ar, dr = play(a(), d())
-        print(f'& \\backslashbox{{{ar:.4f}}}{{{dr:.4f}}} ', end='')
+    for j, d in enumerate(defenders):
+        ar, dr = payoff_table[i, j]
+        print('& ', end='')
+        if is_equilibrium(payoff_table, i, j):
+            print('\\cellcolor[gray]{0.8} ', end='')
+        print(f'\\backslashbox{{{ar:.4f}}}{{{dr:.4f}}} ', end='')
     print('\\\\\n\\hline')
