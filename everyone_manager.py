@@ -14,7 +14,7 @@ m = 10
 
 
 def play(attacker, defender):
-    env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2)
+    env = gym.make('MTD-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05)
 
     ap = AttackerProcessor(m=m)
     dp = DefenderProcessor(m=m)
