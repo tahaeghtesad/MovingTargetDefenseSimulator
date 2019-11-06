@@ -58,11 +58,11 @@ best_mean_reward, n_steps = -np.inf, 0
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
 if training_mode:
-    env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2,
+    env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05,
                    defender=opponent())
 
 else:
-    env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=0, setting=1, ca=0.2,
+    env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05,
                    attacker=opponent())
 
 params = env.config

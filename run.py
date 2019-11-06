@@ -20,7 +20,7 @@ doubles = ['True', 'False']
 prioritized_replays = ['True', 'False']
 normalizations = ['True', 'False']
 
-attacker_opponents = ['UniformDefender']
+attacker_opponents = ['PCPDefender']
 defender_opponents = ['UniformAttacker']
 
 runs = []
