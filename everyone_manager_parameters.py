@@ -79,7 +79,7 @@ for i, a in enumerate(attackers):
 
 def run(params):
     i, j, a, d = params
-    payoff_table[i, j] = play(a, d)
+    return play(a, d)
 
 def gen_games():
     i = 0
@@ -95,5 +95,11 @@ def gen_games():
             # print()
 
 
-Pool(8).map(run, gen_games())
-np.save('payoff.np', payoff_table)
+responses = Pool(8).map(run, gen_games())
+index = 0
+for i in range(len_attackers):
+    for j in range(len_defenders):
+        payoff_table[i, j] = responses[index]
+        index += 1
+
+np.save('payoff', payoff_table)
