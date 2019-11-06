@@ -10,11 +10,11 @@ def run(params):
     # return job_id
 
 
-episodes = ['500']
-efs = ['0.2']  # 0.2
-evs = ['0.02']  # 0.02
+episodes = ['250']
+efs = ['0.2', '0.5']  # 0.2
+evs = ['0.02', '0.1']  # 0.02
 layers = ['x', '64', '64,64']  # 25, 25
-gammas = ['0.99']  # 0.99
+gammas = ['0.99', '0.97']  # 0.99
 duelings = ['True', 'False']
 doubles = ['True', 'False']
 prioritized_replays = ['True', 'False']
