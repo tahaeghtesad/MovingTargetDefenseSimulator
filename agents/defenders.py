@@ -62,8 +62,8 @@ class PCPDefender(BaseDefender):
 
     @staticmethod
     def gen_configurations():
-        for p in range(1, 14):
-            for pi in range(1, 18, 2):
+        for p in range(1, 14, 3):
+            for pi in range(1, 18, 3):
                 yield PCPDefender(p=p, pi=pi)
 
 
@@ -103,8 +103,8 @@ class ControlThresholdDefender(BaseDefender):
 
     @staticmethod
     def gen_configurations():
-        for p in range(1, 14):
-            for tau in np.arange(0.8, 1.05, 0.05):
+        for p in range(1, 14, 3):
+            for tau in np.arange(0.8, 1.0, 0.05):
                 yield ControlThresholdDefender(p=p, tau=tau)
 
 

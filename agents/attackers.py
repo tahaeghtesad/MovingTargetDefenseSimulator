@@ -105,6 +105,6 @@ class ControlThresholdAttacker(BaseAttacker):
 
     @staticmethod
     def gen_configurations():
-        for p in range(1, 10):
-            for tau in np.arange(0.5, 1.05, 0.1):
+        for p in range(1, 4):
+            for tau in np.arange(0.5, 1., 0.2):
                 yield ControlThresholdAttacker(p=p, tau=tau)
