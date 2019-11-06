@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 
 class BaseAttacker:
@@ -8,6 +9,10 @@ class BaseAttacker:
 
     def predict(self, obs):
         return -1 + 1
+
+    @staticmethod
+    def gen_configurations():
+        yield BaseAttacker()
 
 
 class UniformAttacker(BaseAttacker):
@@ -24,6 +29,11 @@ class UniformAttacker(BaseAttacker):
                 targets.append(i)
 
         return (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
+
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 10):
+            yield UniformAttacker(p=p)
 
 
 class MaxProbeAttacker(BaseAttacker):
@@ -56,6 +66,11 @@ class MaxProbeAttacker(BaseAttacker):
 
         return index + 1
 
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 10):
+            yield MaxProbeAttacker(p=p)
+
 
 class ControlThresholdAttacker(BaseAttacker):
     def __init__(self, tau=0.5, p=1, m=10, downtime=7):
@@ -87,3 +102,9 @@ class ControlThresholdAttacker(BaseAttacker):
             probe = (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
 
         return probe
+
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 10):
+            for tau in np.arange(0.5, 1.05, 0.1):
+                yield ControlThresholdAttacker(p=p, tau=tau)

@@ -1,5 +1,6 @@
 import random
 import math
+import numpy as np
 
 
 class BaseDefender:
@@ -8,6 +9,10 @@ class BaseDefender:
 
     def predict(self, obs):
         return -1 + 1
+
+    @staticmethod
+    def gen_configurations():
+        yield BaseDefender()
 
 
 class UniformDefender(BaseDefender):
@@ -31,6 +36,11 @@ class UniformDefender(BaseDefender):
 
         return (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
 
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 14):
+            yield UniformDefender(p=p)
+
 
 class PCPDefender(BaseDefender):
 
@@ -49,6 +59,12 @@ class PCPDefender(BaseDefender):
                 targets.append(i)
 
         return (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
+
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 14):
+            for pi in range(1, 18, 2):
+                yield PCPDefender(p=p, pi=pi)
 
 
 class ControlThresholdDefender(BaseDefender):
@@ -85,6 +101,12 @@ class ControlThresholdDefender(BaseDefender):
 
         return reimage + 1
 
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 14):
+            for tau in np.arange(0.8, 1.05, 0.05):
+                yield ControlThresholdDefender(p=p, tau=tau)
+
 
 class MaxProbeDefender(BaseDefender):
     def __init__(self, m=10, p=4):
@@ -115,3 +137,8 @@ class MaxProbeDefender(BaseDefender):
                     max_count = 1
 
         return index + 1
+
+    @staticmethod
+    def gen_configurations():
+        for p in range(1, 14):
+            yield MaxProbeDefender(p=p)
