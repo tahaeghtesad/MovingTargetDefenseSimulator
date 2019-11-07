@@ -92,5 +92,3 @@ dir = sys.argv[1]
 name = sys.argv[2]
 
 store((dir, name))
-
-time.sleep(60)
