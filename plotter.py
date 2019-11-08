@@ -10,6 +10,10 @@ mode = {
     'best_reward': 0.6188
 }
 
+# mode = {
+#     'target': 'defender',
+#     'best_reward': 0.8876
+# }
 
 def extract(name: str):
     with open('reports.csv') as fd:
@@ -27,6 +31,7 @@ def get_best_reward(name: str):
         for data in reader:
             if name.split('_')[2] in data['\ufeffname']:
                 return float(data['best_reward'])
+    return 0
 
 
 def smooth(series, weight):
