@@ -258,6 +258,6 @@ finally:
         writer = csv.writer(fd)
         writer.writerow(csv_row)
     if training_mode:
-        attacker_model.save(f'weights/attacker_{str(id).split("-")[0]}_{weight_path}_final')
+        attacker_model.save(f'weights/attacker_final_{str(id).split("-")[0]}_{weight_path}')
     else:
-        defender_model.save(f'weights/defender_{str(id).split("-")[0]}_{weight_path}_final')
+        defender_model.save(f'weights/defender_final_{str(id).split("-")[0]}_{weight_path}')
