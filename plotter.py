@@ -5,6 +5,11 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 plt.figure(figsize=(16, 35))
 
+mode = {
+    'target': 'attacker',
+    'best_reward': 0.6188
+}
+
 
 def extract(name: str):
     with open('reports.csv') as fd:
@@ -12,7 +17,16 @@ def extract(name: str):
 
         for data in reader:
             if name.split('_')[2] in data['\ufeffname']:
-                return f"{name.split('_')[2]}-{data['episodes']}-{data['layers']}-{data['gamma']}"
+                return f"{data['learning_rate']}-{data['gamma']}-{data['layers']}-{data['layer_normalization']}-{data['double_q']}-{data['dueling']}-{data['prioritized_replay']}"
+
+
+def get_best_reward(name: str):
+    with open('reports.csv') as fd:
+        reader = csv.DictReader(fd)
+
+        for data in reader:
+            if name.split('_')[2] in data['\ufeffname']:
+                return float(data['best_reward'])
 
 
 def smooth(series, weight):
@@ -23,6 +37,7 @@ def smooth(series, weight):
         ret.append(smoothed)
     return ret
 
+
 plot_data = {
     'rewards': {'x': [], 'y': []},
     'eps': {'x': [], 'y': []},
@@ -32,12 +47,11 @@ plot_data = {
 }
 
 labels = []
-avg = []
 
 for subdir, d, f in os.walk('reward_plots'):
     random_samples = f  #random.sample(f, 20)
     for n in tqdm(random_samples):
-        if 'attacker' in n:
+        if mode['target'] in n:
             labels.append(n)
             with open(f'{subdir}/{n}', 'r') as fd:
                 reader = csv.reader(fd)
@@ -53,8 +67,6 @@ for subdir, d, f in os.walk('reward_plots'):
                     [y[2] for y in data]))
                 plot_data['rewards']['x'].append([x[0] for x in s])
                 plot_data['rewards']['y'].append([y[1] for y in s])
-
-                avg.append(sum([y[1] for y in s])/len([y[1] for y in s]))
 
                 s = sorted(zip(
                     [x[4] for x in data],
@@ -84,14 +96,11 @@ for subdir, d, f in os.walk('reward_plots'):
                 plot_data['td_error']['y'].append([y[1] for y in s])
     break
 
-selected_reward = sorted(avg)[-5]
-
-
 def add_plot(count, order, data, title):
     plt.subplot(count, 1, order)
     plt.title(title)
     for i in range(len(data['x'])):
-        if avg[i] >= selected_reward:
+        if get_best_reward(labels[i]) >= mode['best_reward']:
             if title == 'Epsilon':
                 plt.plot(data['x'][i], data['y'][i], label=f'{extract(labels[i])}')
             elif title == 'Rewards':
@@ -103,12 +112,10 @@ def add_plot(count, order, data, title):
     plt.grid()
 
 
-add_plot(5, 1, plot_data['rewards'], 'Rewards')
+add_plot(4, 1, plot_data['rewards'], 'Rewards')
+add_plot(4, 2, plot_data['action'], 'Action')
+add_plot(4, 3, plot_data['loss'], 'loss')
+add_plot(4, 4, plot_data['td_error'], 'td_error')
 
-add_plot(5, 2, plot_data['eps'], 'Epsilon')
-add_plot(5, 3, plot_data['action'], 'Action')
-add_plot(5, 4, plot_data['loss'], 'loss')
-add_plot(5, 5, plot_data['td_error'], 'td_error')
-
-plt.savefig('plot_attacker.png', dpi=300)
+plt.savefig(f"plot_{mode['target']}.png", dpi=300)
 
