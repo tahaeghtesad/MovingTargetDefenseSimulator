@@ -38,7 +38,7 @@ class UniformDefender(BaseDefender):
 
     @staticmethod
     def gen_configurations():
-        for p in range(1, 14):
+        for p in range(1, 14, 3):
             yield UniformDefender(p=p)
 
 
@@ -63,7 +63,7 @@ class PCPDefender(BaseDefender):
     @staticmethod
     def gen_configurations():
         for p in range(1, 14, 3):
-            for pi in range(1, 18, 3):
+            for pi in range(1, 12, 3):
                 yield PCPDefender(p=p, pi=pi)
 
 
@@ -140,5 +140,5 @@ class MaxProbeDefender(BaseDefender):
 
     @staticmethod
     def gen_configurations():
-        for p in range(1, 14):
+        for p in range(1, 14, 3):
             yield MaxProbeDefender(p=p)
