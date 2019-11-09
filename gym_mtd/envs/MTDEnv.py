@@ -283,7 +283,7 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
         self.config['opponent'] = defender.__class__.__name__
 
         self.action_space = Discrete(m + 1)
-        self.observation_space = MultiDiscrete([2, 7, 32, 2] * m)
+        self.observation_space = MultiDiscrete([2, 7, 32, 2, 512] * m)
 
         self.attacker_processor = AttackerProcessor(m, downtime)
         self.defender_processor = DefenderProcessor(m, downtime)

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 import logging
 
@@ -17,7 +18,8 @@ class AttackerProcessor:
             self.servers.append({
                 'status': -1,
                 'progress': 0,
-                'control': 0
+                'control': 0,
+                'last_probe': -1
             })
 
     ### This method is only called when environment is reset.
@@ -27,7 +29,8 @@ class AttackerProcessor:
             self.servers.append({
                 'status': -1,
                 'progress': 0,
-                'control': 0
+                'control': 0,
+                'last_probe': -1
             })
 
         return self.convert_state(0)
@@ -58,26 +61,30 @@ class AttackerProcessor:
         if action != -1:
             if success == 1:
                 self.servers[action]['control'] = 1
-                # self.servers[action]['progress'] += 1
+                self.servers[action]['progress'] += 1
                 self.servers[action]['status'] = -1
+                self.servers[action]['last_probe'] = time
                 self.logger.debug('Probe was successful.')
             elif success == 0:
                 self.servers[action]['progress'] += 1
                 self.servers[action]['control'] = 0  # Why is it here?
                 self.servers[action]['status'] = -1
+                self.servers[action]['last_probe'] = time
                 self.logger.debug('Probe was unsuccessful.')
             elif success == -1:
                 self.servers[action]['status'] = self.servers[action]['status'] if self.servers[action][
                                                                                        'status'] != -1 else time
                 self.servers[action]['progress'] = 0
                 self.servers[action]['control'] = 0  # Why is it here?
+                self.servers[action]['last_probe'] = -1
                 self.logger.debug('Server was down.')
 
         if last_reimage != -1:
             self.servers[last_reimage] = {
                 'status': time,
                 'control': 0,
-                'progress': 0
+                'progress': 0,
+                'last_probe': -1
             }
 
 
@@ -94,10 +101,12 @@ class AttackerProcessor:
         for server in self.servers:
             up = int(server['status'] == -1)
             time_to_up = 0 if up else server['status'] + self.downtime - time
+            # progress = 1 / (1 + math.exp(-server['progress'] + 5.6))
             progress = server['progress']
             control = server['control']
+            time_since_last_probe = -1 if server['last_probe'] == -1 else time - server['last_probe']
 
             new_state.append(
-                [up, time_to_up, progress, control]
+                [up, time_to_up, progress, control, time_since_last_probe]
             )
         return np.array(new_state).flatten()
