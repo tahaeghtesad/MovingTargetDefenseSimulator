@@ -6,7 +6,7 @@ def run(params):
     player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization = params
     print(f"Running... {['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization]}")
     completed = subprocess.run(['sbatch', 'run.srun.sh', player, episodes, opponent, ef, ev, layers, gamma, dueling, double, prioritized_replay, normalization], stdout=PIPE)
-    job_id = int(completed.stdout.decode("ascii").split('\n')[1].split(' ')[3])
+    job_id = int(completed.stdout.decode("ascii").split('\n')[0].split(' ')[-1])
     return job_id
 
 
