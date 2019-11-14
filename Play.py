@@ -44,6 +44,7 @@ dueling = sys.argv[8] == 'True'
 double = sys.argv[9] == 'True'
 prioritized_replay = sys.argv[10] == 'True'
 normalization = sys.argv[11] == 'True'
+nu = float(sys.argv[12])
 
 print(f'Training Mode: {"Attacker" if training_mode else "Defender"}')
 
@@ -58,11 +59,11 @@ best_mean_reward, n_steps = -np.inf, 0
 rootLogger.setLevel(logging.INFO if debug is False else logging.DEBUG)
 
 if training_mode:
-    env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05,
+    env = gym.make('MTDAtt-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05, probe_detection=nu,
                    defender=opponent())
 
 else:
-    env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05,
+    env = gym.make('MTDDef-v0', m=m, time_limit=steps, utenv=2, setting=0, ca=0.05, probe_detection=nu,
                    attacker=opponent())
 
 params = env.config

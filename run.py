@@ -23,20 +23,36 @@ normalizations = ['True']
 attacker_opponents = ['PCPDefender']
 defender_opponents = ['UniformAttacker']
 
-runs = []
-for ep in episodes:
-    for ef in efs:
-        for ev in evs:
-            for layer in layers:
-                for gamma in gammas:
-                    for dueling in duelings:
-                        for double in doubles:
-                            for prioritized_replay in prioritized_replays:
-                                for normalization in normalizations:
-                                    for opponent in attacker_opponents:
-                                        runs.append(('attacker', ep, opponent, ef, ev, layer, gamma, dueling, double, prioritized_replay, normalization))
+# runs = []
+# for ep in episodes:
+#     for ef in efs:
+#         for ev in evs:
+#             for layer in layers:
+#                 for gamma in gammas:
+#                     for dueling in duelings:
+#                         for double in doubles:
+#                             for prioritized_replay in prioritized_replays:
+#                                 for normalization in normalizations:
+#                                     for opponent in attacker_opponents:
+#                                         runs.append(('attacker', ep, opponent, ef, ev, layer, gamma, dueling, double, prioritized_replay, normalization))
                                     # for opponent in defender_opponents:
                                     #     runs.append(('defender', ep, opponent, ef, ev, layer, gamma, dueling, double, prioritized_replay, normalization))
+
+runs = [
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'True', 'False', 'True', '0'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'True', 'False', 'False', 'True', '0'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.20', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64,64', '0.99', 'False', 'False', 'False', 'True', '0'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0.5'],
+
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'True', 'False', 'True', '0'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'True', 'False', 'False', 'True', '0'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.20', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64,64', '0.99', 'False', 'False', 'False', 'True', '0'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0.5'],
+]
 
 for r in runs:
     id = run(r)
