@@ -6,7 +6,6 @@ import math
 import random
 import numpy as np
 import time
-import copy
 
 from util.AttackerProcessor import AttackerProcessor
 from util.DefenderProcessor import DefenderProcessor
@@ -288,8 +287,7 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
         self.attacker_processor = AttackerProcessor(m, downtime)
         self.defender_processor = DefenderProcessor(m, downtime)
 
-        self.defender_b = defender
-        self.defender = copy.deepcopy(self.defender_b)
+        self.defender = defender
 
         self.last_defender_obs = None
 
@@ -303,7 +301,6 @@ class MTDAttackerEnv(MovingTargetDefenceEnv):
         return self.attacker_processor.process_step(observation, reward, done, info)
 
     def reset(self):
-        self.defender = copy.deepcopy(self.defender_b)
         observation = super().reset()
 
         self.last_defender_obs = self.defender_processor.process_observation(observation)
@@ -325,8 +322,7 @@ class MTDDefenderEnv(MovingTargetDefenceEnv):
         self.attacker_processor = AttackerProcessor(m, downtime)
         self.defender_processor = DefenderProcessor(m, downtime)
 
-        self.attacker_b = attacker
-        self.attacker = copy.deepcopy(self.attacker_b)
+        self.attacker = attacker
 
         self.last_attacker_obs = None
 
@@ -340,7 +336,6 @@ class MTDDefenderEnv(MovingTargetDefenceEnv):
         return self.defender_processor.process_step(observation, reward, done, info)
 
     def reset(self):
-        self.attacker = copy.deepcopy(self.attacker_b)
         observation = super().reset()
 
         self.last_attacker_obs = self.attacker_processor.process_observation(observation)
