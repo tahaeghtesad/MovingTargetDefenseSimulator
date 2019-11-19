@@ -3,16 +3,20 @@ import os
 import random
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-plt.figure(figsize=(16, 35))
+plt.figure(figsize=(12, 9))
 
 mode = {
     'target': 'attacker',
-    'best_reward': 0.6188
+    'best_reward': 0.6188,
+    'ymin': 0.45,
+    'ymax': 0.8
 }
 
 # mode = {
 #     'target': 'defender',
-#     'best_reward': 0.8876
+#     'best_reward': 0.8876,
+#     'ymin': 0.75,
+#     'ymax': 0.97
 # }
 
 def extract(name: str):
@@ -21,7 +25,8 @@ def extract(name: str):
 
         for data in reader:
             if name.split('_')[2] in data['\ufeffname']:
-                return f"{data['learning_rate']}-{data['gamma']}-{data['layers']}-{data['layer_normalization']}-{data['double_q']}-{data['dueling']}-{data['prioritized_replay']}"
+                # return f"{data['learning_rate']}-{data['gamma']}-{data['layers']}-{data['layer_normalization']}-{data['double_q']}-{data['dueling']}-{data['prioritized_replay']}"
+                return data['info']
 
 
 def get_best_reward(name: str):
@@ -102,25 +107,27 @@ for subdir, d, f in os.walk('reward_plots'):
     break
 
 def add_plot(count, order, data, title):
-    plt.subplot(count, 1, order)
-    plt.title(title)
+    # plt.subplot(count, 1, order)
+    plt.title('Learning Curve')
+    plt.axis([0, 500000, mode['ymin'], mode['ymax']])
     for i in range(len(data['x'])):
-        if get_best_reward(labels[i]) >= mode['best_reward']:
+        if extract(labels[i]) is not None:
+        # if get_best_reward(labels[i]) >= mode['best_reward']:
             if title == 'Epsilon':
                 plt.plot(data['x'][i], data['y'][i], label=f'{extract(labels[i])}')
             elif title == 'Rewards':
-                plt.plot(data['x'][i], smooth(data['y'][i], 0.9), label=f'{extract(labels[i])}')
+                plt.plot(data['x'][i], smooth(data['y'][i], 0.0), label=f'{extract(labels[i])}')
             else:
-                plt.plot(data['x'][i], smooth(data['y'][i], 0.99), label=f'{extract(labels[i])}')
+                plt.plot(data['x'][i], smooth(data['y'][i], 0.0), label=f'{extract(labels[i])}')
 
-    plt.legend(loc='lower right')
+    plt.legend(loc='lower right', prop={'size': 18})
     plt.grid()
 
 
-add_plot(4, 1, plot_data['rewards'], 'Rewards')
-add_plot(4, 2, plot_data['action'], 'Action')
-add_plot(4, 3, plot_data['loss'], 'loss')
-add_plot(4, 4, plot_data['td_error'], 'td_error')
+add_plot(1, 1, plot_data['rewards'], 'Rewards')
+# add_plot(4, 2, plot_data['action'], 'Action')
+# add_plot(4, 3, plot_data['loss'], 'loss')
+# add_plot(4, 4, plot_data['td_error'], 'td_error')
 
-plt.savefig(f"plot_{mode['target']}.png", dpi=300)
+plt.savefig(f"plot_{mode['target']}.pgf", bbox_inches='tight')
 
