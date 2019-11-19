@@ -41,19 +41,21 @@ defender_opponents = ['UniformAttacker']
                                     #     runs.append(('defender', ep, opponent, ef, ev, layer, gamma, dueling, double, prioritized_replay, normalization))
 
 runs = [
-    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
-    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'True', 'False', 'True', '0'],
-    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'True', 'False', 'False', 'True', '0'],
-    ['attacker', '500', 'PCPDefender', '0.2', '0.20', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
-    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64,64', '0.99', 'False', 'False', 'False', 'True', '0'],
-    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0.5'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0', 'Vanilla'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'True', 'False', 'True', '0', 'Double-$Q$'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'True', 'False', 'False', 'True', '0', 'Dueling-$Q'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.20', '64', '0.99', 'False', 'False', 'False', 'True', '0', '$\\epsilon_f = 0.2$'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64,64', '0.99', 'False', 'False', 'False', 'True', '0', '2 Hidden Layers'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'True', 'True', '0', 'Prioritized Replay'],
+    ['attacker', '500', 'PCPDefender', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0.5', '$\\nu = 0.5$'],
 
-    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
-    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'True', 'False', 'True', '0'],
-    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'True', 'False', 'False', 'True', '0'],
-    ['defender', '500', 'UniformAttacker', '0.2', '0.20', '64', '0.99', 'False', 'False', 'False', 'True', '0'],
-    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64,64', '0.99', 'False', 'False', 'False', 'True', '0'],
-    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0.5'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0', 'Vanilla'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'True', 'False', 'True', '0', 'Double-$Q$'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'True', 'False', 'False', 'True', '0', 'Dueling-$Q'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.20', '64', '0.99', 'False', 'False', 'False', 'True', '0', '$\\epsilon_f = 0.2$'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64,64', '0.99', 'False', 'False', 'False', 'True', '0', '2 Hidden Layers'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'True', 'True', '0', 'Prioritized Replay'],
+    ['defender', '500', 'UniformAttacker', '0.2', '0.02', '64', '0.99', 'False', 'False', 'False', 'True', '0.5', '$\\nu = 0.5$'],
 ]
 
 for r in runs:

@@ -45,6 +45,7 @@ double = sys.argv[9] == 'True'
 prioritized_replay = sys.argv[10] == 'True'
 normalization = sys.argv[11] == 'True'
 nu = float(sys.argv[12])
+info = ' '.join(sys.argv[13:])
 
 print(f'Training Mode: {"Attacker" if training_mode else "Defender"}')
 
@@ -254,7 +255,7 @@ except Exception:
     traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stderr)
 
 finally:
-    csv_row += ['', best_mean_reward, datetime.now()-start]
+    csv_row += ['', best_mean_reward, datetime.now()-start, info]
     with open('reports.csv', 'a') as fd:
         writer = csv.writer(fd)
         writer.writerow(csv_row)
