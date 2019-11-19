@@ -233,3 +233,5 @@ reward_plots
 tb_logs/
 *.png
 *.jpg
+*.pgf
+*.csv
