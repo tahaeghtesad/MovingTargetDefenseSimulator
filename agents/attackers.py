@@ -25,7 +25,7 @@ class UniformAttacker(BaseAttacker):
 
         targets = []
         for i in range(self.m):  # 0 -> up / 1 -> time to up / 2 -> progress / 3 -> control
-            if obs[i * 4 + 3] == 0 and obs[i * 4 + 0] == 1:
+            if obs[i * 5 + 3] == 0 and obs[i * 5 + 0] == 1:
                 targets.append(i)
 
         return (-1 if len(targets) == 0 else targets[random.randint(0, len(targets) - 1)]) + 1
@@ -54,14 +54,14 @@ class MaxProbeAttacker(BaseAttacker):
         max_count = 0
 
         for i in range(self.m):  # 0 -> up / 1 -> time to up / 2 -> progress / 3 -> control
-            if obs[i * 4 + 3] == 0 and obs[i * 4 + 0] == 1:
-                if obs[i * 4 + 2] == max:
+            if obs[i * 5 + 3] == 0 and obs[i * 5 + 0] == 1:
+                if obs[i * 5 + 2] == max:
                     max_count += 1
                     if random.random() < 1/max_count:
                         index = i
-                if obs[i * 4 + 2] > max:
+                if obs[i * 5 + 2] > max:
                     index = i
-                    max = obs[i * 4 + 2]
+                    max = obs[i * 5 + 2]
                     max_count = 1
 
         return index + 1
@@ -91,8 +91,8 @@ class ControlThresholdAttacker(BaseAttacker):
         for i in range(self.m):  # 0 -> up / 1 -> time to up / 2 -> progress / 3 -> control
             # if self.servers[i]['control'] == 0:
             #     if self.servers[i]['status'] == -1:
-            if obs[i * 4 + 3] == 0:
-                if obs[i * 4 + 0] == 1:
+            if obs[i * 5 + 3] == 0:
+                if obs[i * 5 + 0] == 1:
                     targets.append(i)
                 defender_control_or_down += 1
 
@@ -105,6 +105,6 @@ class ControlThresholdAttacker(BaseAttacker):
 
     @staticmethod
     def gen_configurations():
-        for p in range(1, 4):
+        for p in range(1, 5):
             for tau in np.arange(0.5, 1., 0.2):
                 yield ControlThresholdAttacker(p=p, tau=tau)
